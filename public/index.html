@@ -1,0 +1,27 @@
+<html>
+	<head>
+			<script src="/socket.io/socket.io.js"></script>
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+			<script type="text/javascript" src="raphael-min.js"></script>
+			<script type='text/javascript' src='script.js'></script>
+			<script>
+				console.log( 'opening socket...' );
+				var socket = io.connect();
+
+				socket.on( 'connect', function() {
+					console.log( 'connected' );
+				} );
+
+				// listener, whenever the server emits 'updatechat', this updates the chat body
+				socket.on( 'statechange', function( data ) {
+					//console.log( data );
+					drawPolarGraph( data.satellites );
+				} );
+			</script>
+		</head>
+		<body style="background:#2a2a2a;">
+			<p style="color:#ddd;">
+				GPS Satellites in View
+			</p>
+	</body>
+</html>
