@@ -2,7 +2,8 @@ var express = require( 'express' );
 var app = express();
 var serialPort = require( 'serialport' );
 var SerialPort = serialPort.SerialPort;
-var GPSParser = require( './lib/gpsparser' );
+var GPSParser = require( './lib/gps-parser' );
+var TLEStore = require( './lib/tle-store' );
 var SocketIO = require( 'socket.io' );
 
 var socketIO = false;
