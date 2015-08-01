@@ -1,0 +1,11 @@
+.in-view {
+	color: #ffff00;
+}
+
+a {
+	color: #aaa;
+}
+
+.in-view a {
+	color: #ffff00;
+}

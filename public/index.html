@@ -1,27 +1,18 @@
 <html>
 	<head>
-			<script src="/socket.io/socket.io.js"></script>
-			<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-			<script type="text/javascript" src="raphael-min.js"></script>
-			<script type='text/javascript' src='script.js'></script>
-			<script>
-				console.log( 'opening socket...' );
-				var socket = io.connect();
-
-				socket.on( 'connect', function() {
-					console.log( 'connected' );
-				} );
-
-				// listener, whenever the server emits 'updatechat', this updates the chat body
-				socket.on( 'statechange', function( data ) {
-					//console.log( data );
-					drawPolarGraph( data.satellites );
-				} );
-			</script>
-		</head>
-		<body style="background:#2a2a2a;">
-			<p style="color:#ddd;">
-				GPS Satellites in View
-			</p>
+		<link rel="stylesheet" type="text/css" href="styles.css" />
+		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript" src="jquery-1.11.3.min.js"></script>
+		<script type="text/javascript" src="raphael-min.js"></script>
+		<script type="text/javascript" src="underscore-min.js"></script>
+		<script type="text/javascript" src="satellite.js"></script>
+		<script type='text/javascript' src='script.js'></script>
+	</head>
+	<body style="background:#2a2a2a;">
+		<p style="color:#ddd;">
+			Satellites in View
+		</p>
+		<div id="favorites" style="width:50%;color:#fff;float:right">
+		</div>
 	</body>
 </html>

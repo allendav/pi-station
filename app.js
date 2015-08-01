@@ -10,12 +10,23 @@ var socketIO = false;
 
 app.use( express.static( 'public' ) );
 
-var server = app.listen( 8080, function() {
-	var host = server.address().address;
-	var port = server.address().port;
-	socketIO = SocketIO.listen( server );
-	console.log( 'Listening at http://%s:%s', host, port );
+// Bootstrap TLE service
+
+console.log( '*** Bootstrapping TLE service ***' );
+
+var tleStore = new TLEStore();
+
+tleStore.on( 'change', function( store ) {
+	console.log( 'received tle change notification' );
+	if ( socketIO ) {
+		// update connected clients
+		socketIO.emit( 'tle-data', tleStore.getTLE() );
+	}
 } );
+
+// Bootstrap GPS service
+
+console.log( '*** Bootstrapping GPS service ***' );
 
 serialPort.list( function ( err, ports ) {
 	ports.forEach( function( port ) {
@@ -33,11 +44,36 @@ var usbModem = new SerialPort( '/dev/cu.usbmodem14211',
 usbModem.on( 'open', function() {
 	console.log( 'open' );
 	usbModem.on( 'data', function( data ) {
-		console.log( 'data received: ' + data );
-		if ( GPSParser.parse( data ) ) {
+		// console.log( 'data received: ' + data );
+		if ( GPSParser.parse( data ) && socketIO ) {
 			var state = GPSParser.getState();
-			socketIO.emit( 'statechange', state );
-			console.log( state );
+			socketIO.emit( 'gps-data', state );
+			// console.log( state );
 		}
 	} );
 } );
+
+// Start serving sockets
+
+console.log( '*** Listening for clients ***' );
+
+var server = app.listen( 8080, function() {
+
+	var host = server.address().address;
+	var port = server.address().port;
+	socketIO = SocketIO.listen( server );
+	console.log( 'Listening at http://%s:%s', host, port );
+
+	socketIO.on( 'connection', function( socket ) {
+		console.log( 'we have a new connection' );
+		// if we have any poo, fling it now
+		if ( tleStore.isTLEAvailable() ) {
+			console.log( 'sending them tle-data' );
+			socket.emit( 'tle-data', tleStore.getTLE() );
+		} else {
+			console.log( 'nothing available to send them yet' );
+		}
+	} );
+
+} );
+

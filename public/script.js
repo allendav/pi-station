@@ -1,6 +1,6 @@
 var paper;
 var polarGraphSize = 500.0;
-var fullRadius = 0.95 * polarGraphSize / 2.0;
+var fullRadius = 0.90 * polarGraphSize / 2.0;
 var cx = polarGraphSize / 2.0;
 var cy = polarGraphSize / 2.0;
 
@@ -45,7 +45,7 @@ function getColorMapValue( min, current, max ) {
 	return "#" + numberToHex( red ) + numberToHex( green ) + numberToHex( blue );
 }
 
-function drawPolarGraph( satellites ) {
+function drawPolarGraph() {
 	var color = "#444";
 
 	// Clear it all (eventually use layers instead)
@@ -74,6 +74,9 @@ function drawPolarGraph( satellites ) {
 		}
 		circle.attr( "stroke", color );
 	}
+}
+
+function plotSatellites( satellites ) {
 
 	// Plot each satellite
 	satellites.forEach( function( satellite, index, array ) {
@@ -92,11 +95,141 @@ function drawPolarGraph( satellites ) {
 	} );
 }
 
-$( document ).ready( function() {
-	console.log( "ready!" );
+function updateFavoritesTable( satellites ) {
 
+	var html = '';
+
+	satellites.forEach( function( favorite ) {
+		html += "<p";
+		if ( favorite.elevation >= 0.0 ) {
+			html += " class='in-view'";
+		}
+		html += "><a href='http://www.n2yo.com/?s=";
+		html += favorite.id;
+		html += "' target='_blank'>";
+		html += favorite.name;
+		html += "</a>";
+		html += "<br/>";
+		html += "Az: ";
+		html += favorite.azimuth;
+		html += ", El: ";
+		html += favorite.elevation;
+		html += "</p>";
+	} );
+
+	jQuery( "#favorites" ).html( html );
+}
+
+function findCurrentPositionOfFavorites( tles ) {
+
+	var favorites = [
+		7530,  // AMSAT OSCAR 7
+		24278, // FO-29 / JAS 2
+		25544, // ISS
+		27607, // SAUDISAT 50
+		36122, // HOPE 1
+		39444  // Funcube 1
+	];
+
+	var favoritesPositions = [];
+	var favoritesToPlot = [];
+
+	favorites.forEach( function( favorite ) {
+		var favoriteTLE = _.findWhere( tles, { id: favorite } );
+
+		if ( favoriteTLE ) {
+			var satrec = satellite.twoline2satrec( favoriteTLE.tleLine1, favoriteTLE.tleLine2 );
+			var now = new Date();
+
+			var positionAndVelocity = satellite.propagate(
+				satrec,
+				now.getUTCFullYear(),
+				now.getUTCMonth() + 1, // Note, this function requires months in range 1-12.
+				now.getUTCDate(),
+				now.getUTCHours(),
+				now.getUTCMinutes(),
+				now.getUTCSeconds()
+			);
+
+			var positionEci = positionAndVelocity.position;
+
+			var deg2rad = Math.PI / 180.;
+			var rad2deg = 1. / deg2rad;
+
+			// TODO: Set from GPS if available
+			var observerGd = {
+				longitude: -121.992397 * deg2rad,
+				latitude: 47.90058 * deg2rad,
+				height: 0.138 // km. above WGS 84 ellipsoid?
+			};
+
+			var gmst = satellite.gstimeFromDate(
+				now.getUTCFullYear(),
+				now.getUTCMonth() + 1, // Note, this function requires months in range 1-12.
+				now.getUTCDate(),
+				now.getUTCHours(),
+				now.getUTCMinutes(),
+				now.getUTCSeconds()
+			);
+
+			var positionEcf = satellite.eciToEcf( positionEci, gmst ),
+				lookAngles  = satellite.ecfToLookAngles( observerGd, positionEcf );
+
+			var azimuth   = Math.floor( 10.0 * lookAngles.azimuth * rad2deg ) / 10.0,
+				elevation = Math.floor( 10.0 * lookAngles.elevation * rad2deg ) / 10.0;
+
+			console.log( favoriteTLE.satName, azimuth, elevation );
+
+			if ( elevation >= 0 ) {
+				favoritesToPlot.push( {
+					prn: favoriteTLE.satName,
+					azimuth: azimuth,
+					elevation: elevation,
+					snr: 100
+				} );
+			}
+
+			favoritesPositions.push( {
+				id: favoriteTLE.id,
+				name: favoriteTLE.satName,
+				azimuth: azimuth,
+				elevation: elevation
+			} );
+		};
+
+		plotSatellites( favoritesToPlot );
+
+		updateFavoritesTable( favoritesPositions );
+
+	} );
+
+}
+
+$( document ).ready( function() {
 	// Creates canvas 320 × 200 at 10, 50
 	paper = Raphael( 50, 50, polarGraphSize, polarGraphSize );
 
-	drawPolarGraph( [] );
+	drawPolarGraph();
+
+	var socket = io.connect();
+
+	// listener, whenever the server emits 'gps-data', this updates the chat body
+	socket.on( 'gps-data', function( data ) {
+		drawPolarGraph();
+		plotSatellites( data.satellites );
+	} );
+
+	var tle = [];
+
+	// listener, whenever the server emits 'tle-data', this updates the chat body
+	socket.on( 'tle-data', function( data ) {
+		tle = data;
+	} );
+
+	setInterval( function() {
+		if ( tle.length ) {
+			findCurrentPositionOfFavorites( tle );
+		}
+	}, 1000 );
+
 } );
