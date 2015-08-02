@@ -4,6 +4,17 @@ var fullRadius = 0.90 * polarGraphSize / 2.0;
 var cx = polarGraphSize / 2.0;
 var cy = polarGraphSize / 2.0;
 
+var tles = [];
+var upcomingPasses = [];
+var favoriteIDs = [
+	7530,  // AMSAT OSCAR 7
+	24278, // FO-29 / JAS 2
+	25544, // ISS
+	27607, // SAUDISAT 50
+	36122, // HOPE 1
+	39444  // Funcube 1
+];
+
 function convertAzElToXY( azdeg, eldeg ) {
 	var radius = fullRadius * ( 90.0 - eldeg ) / 90.0;
 	azdeg = azdeg - 90; // (so N (0) is up)
@@ -114,94 +125,207 @@ function updateFavoritesTable( satellites ) {
 		html += favorite.azimuth;
 		html += ", El: ";
 		html += favorite.elevation;
+
+		if ( favorite.elevation < 0.0 ) {
+			var nextPass = getNextPass( favorite.id );
+			if ( false !== nextPass ) {
+				var next = new Date();
+				next.setTime( nextPass.startTime );
+				var m = moment( next );
+
+				html += '<br/>Next pass is ';
+				html += m.fromNow();
+				html += ' (maxEl: ';
+				html += nextPass.maxEl;
+				html += ')';
+			}
+		}
+
 		html += "</p>";
+
 	} );
 
 	jQuery( "#favorites" ).html( html );
 }
 
-function findCurrentPositionOfFavorites( tles ) {
+function getNextPass( satelliteID ) {
+	// returns the next pass for the given satelliteID
+	// returns false if we have no more passes in the store for this satelliteID
 
-	var favorites = [
-		7530,  // AMSAT OSCAR 7
-		24278, // FO-29 / JAS 2
-		25544, // ISS
-		27607, // SAUDISAT 50
-		36122, // HOPE 1
-		39444  // Funcube 1
-	];
+	var nextPass = false;
+	var now = new Date();
+	var nowTime = now.getTime();
+
+	var passes = _.filter( upcomingPasses, function( pass ) {
+		return ( pass.id === satelliteID );
+	} );
+
+	passes.forEach( function( pass ) {
+		// note: assumes the passes are in chronological order in the store
+		if ( ! nextPass && nowTime <= pass.startTime ) {
+			nextPass = pass;
+		}
+	} );
+
+	return nextPass;
+}
+
+
+function findUpcomingPassesOfFavorites() {
+
+	upcomingPasses = [];
+
+	var now = new Date();
+	var nowTime = now.getTime();
+	var then = new Date();
+	var thenTime = then.getTime();
+
+	favoriteIDs.forEach( function( favoriteID ) {
+		var favoriteTLE = _.findWhere( tles, { id: favoriteID } );
+
+		var inPass = false;
+		var position;
+
+		var startTime, startAz, maxEl, maxElTime, maxElAz, endTime, endAz;
+
+		if ( favoriteTLE ) {
+
+			maxEl = -1.0;
+
+			for ( var minutes = 0; minutes < 1440; minutes++ ) {
+
+				thenTime = nowTime + minutes * 60000;
+				then.setTime( thenTime );
+
+				position = findPositionOfSatellite( favoriteID, then );
+				if ( null !== position.elevation ) {
+					if ( ! inPass && position.elevation >= 0.0 ) {
+						inPass = true;
+						startTime = thenTime;
+						startAz = position.azimuth;
+					} else if ( inPass && position.elevation < 0.0 ) {
+						inPass = false;
+
+						// save the record if Elevation got to at least 15 degrees
+						if ( maxEl >= 15.0 ) {
+							upcomingPasses.push( {
+								id : favoriteID,
+								startTime: startTime,
+								startAz: startAz,
+								maxEl: maxEl,
+								maxElAz: maxElAz,
+								maxElTime: maxElTime,
+								endTime: thenTime,
+								endAz: position.azimuth
+							} );
+						}
+
+						// Reset maxEl for next pass
+						maxEl = -1.0;
+					}
+
+					if ( inPass && position.elevation > maxEl ) {
+						maxEl = position.elevation;
+						maxElAz = position.azimuth;
+						maxElTime = thenTime;
+					}
+
+				}
+
+			}
+		}
+
+	} );
+
+	// dump the pass database for debugging
+	console.log( upcomingPasses );
+}
+
+function findPositionOfSatellite( satelliteID, dateTime ) {
+
+	var azimuth = null;
+	var elevation = null;
+	var satelliteTLE = _.findWhere( tles, { id: satelliteID } );
+
+	if ( satelliteTLE ) {
+		var satrec = satellite.twoline2satrec( satelliteTLE.tleLine1, satelliteTLE.tleLine2 );
+
+		var positionAndVelocity = satellite.propagate(
+			satrec,
+			dateTime.getUTCFullYear(),
+			dateTime.getUTCMonth() + 1, // Note, this function requires months in range 1-12.
+			dateTime.getUTCDate(),
+			dateTime.getUTCHours(),
+			dateTime.getUTCMinutes(),
+			dateTime.getUTCSeconds()
+		);
+
+		var positionEci = positionAndVelocity.position;
+
+		var deg2rad = Math.PI / 180.;
+		var rad2deg = 1. / deg2rad;
+
+		// TODO: Set from GPS if available
+		var observerGd = {
+			longitude: -121.992397 * deg2rad,
+			latitude: 47.90058 * deg2rad,
+			height: 0.138 // km. above WGS 84 ellipsoid?
+		};
+
+		var gmst = satellite.gstimeFromDate(
+			dateTime.getUTCFullYear(),
+			dateTime.getUTCMonth() + 1, // Note, this function requires months in range 1-12.
+			dateTime.getUTCDate(),
+			dateTime.getUTCHours(),
+			dateTime.getUTCMinutes(),
+			dateTime.getUTCSeconds()
+		);
+
+		var positionEcf = satellite.eciToEcf( positionEci, gmst ),
+			lookAngles  = satellite.ecfToLookAngles( observerGd, positionEcf );
+
+		azimuth   = Math.floor( 10.0 * lookAngles.azimuth * rad2deg ) / 10.0;
+		elevation = Math.floor( 10.0 * lookAngles.elevation * rad2deg ) / 10.0;
+
+	}
+
+	return { azimuth: azimuth, elevation: elevation };
+}
+
+function findCurrentPositionOfFavorites() {
 
 	var favoritesPositions = [];
 	var favoritesToPlot = [];
+	var now = new Date();
 
-	favorites.forEach( function( favorite ) {
-		var favoriteTLE = _.findWhere( tles, { id: favorite } );
+	favoriteIDs.forEach( function( favoriteID ) {
 
-		if ( favoriteTLE ) {
-			var satrec = satellite.twoline2satrec( favoriteTLE.tleLine1, favoriteTLE.tleLine2 );
-			var now = new Date();
+		var favoriteTLE = _.findWhere( tles, { id: favoriteID } );
+		var position = findPositionOfSatellite( favoriteID, now );
 
-			var positionAndVelocity = satellite.propagate(
-				satrec,
-				now.getUTCFullYear(),
-				now.getUTCMonth() + 1, // Note, this function requires months in range 1-12.
-				now.getUTCDate(),
-				now.getUTCHours(),
-				now.getUTCMinutes(),
-				now.getUTCSeconds()
-			);
-
-			var positionEci = positionAndVelocity.position;
-
-			var deg2rad = Math.PI / 180.;
-			var rad2deg = 1. / deg2rad;
-
-			// TODO: Set from GPS if available
-			var observerGd = {
-				longitude: -121.992397 * deg2rad,
-				latitude: 47.90058 * deg2rad,
-				height: 0.138 // km. above WGS 84 ellipsoid?
-			};
-
-			var gmst = satellite.gstimeFromDate(
-				now.getUTCFullYear(),
-				now.getUTCMonth() + 1, // Note, this function requires months in range 1-12.
-				now.getUTCDate(),
-				now.getUTCHours(),
-				now.getUTCMinutes(),
-				now.getUTCSeconds()
-			);
-
-			var positionEcf = satellite.eciToEcf( positionEci, gmst ),
-				lookAngles  = satellite.ecfToLookAngles( observerGd, positionEcf );
-
-			var azimuth   = Math.floor( 10.0 * lookAngles.azimuth * rad2deg ) / 10.0,
-				elevation = Math.floor( 10.0 * lookAngles.elevation * rad2deg ) / 10.0;
-
-			console.log( favoriteTLE.satName, azimuth, elevation );
-
-			if ( elevation >= 0 ) {
-				favoritesToPlot.push( {
-					prn: favoriteTLE.satName,
-					azimuth: azimuth,
-					elevation: elevation,
-					snr: 100
-				} );
-			}
-
-			favoritesPositions.push( {
-				id: favoriteTLE.id,
-				name: favoriteTLE.satName,
-				azimuth: azimuth,
-				elevation: elevation
+		if ( position.elevation >= 0 ) {
+			favoritesToPlot.push( {
+				prn: favoriteTLE.satName,
+				azimuth: position.azimuth,
+				elevation: position.elevation,
+				snr: 100
 			} );
-		};
+		}
 
-		plotSatellites( favoritesToPlot );
-
-		updateFavoritesTable( favoritesPositions );
+		favoritesPositions.push( {
+			id: favoriteTLE.id,
+			name: favoriteTLE.satName,
+			azimuth: position.azimuth,
+			elevation: position.elevation
+		} );
 
 	} );
+
+	drawPolarGraph();
+
+	plotSatellites( favoritesToPlot );
+
+	updateFavoritesTable( favoritesPositions );
 
 }
 
@@ -219,16 +343,15 @@ $( document ).ready( function() {
 		plotSatellites( data.satellites );
 	} );
 
-	var tle = [];
-
 	// listener, whenever the server emits 'tle-data', this updates the chat body
 	socket.on( 'tle-data', function( data ) {
-		tle = data;
+		tles = data;
+		findUpcomingPassesOfFavorites();
 	} );
 
 	setInterval( function() {
-		if ( tle.length ) {
-			findCurrentPositionOfFavorites( tle );
+		if ( tles.length ) {
+			findCurrentPositionOfFavorites();
 		}
 	}, 1000 );
 

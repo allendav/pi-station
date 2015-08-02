@@ -25,9 +25,11 @@ tleStore.on( 'change', function( store ) {
 } );
 
 // Bootstrap GPS service
+// TODO : use gpsd instead
 
 console.log( '*** Bootstrapping GPS service ***' );
 
+/*
 serialPort.list( function ( err, ports ) {
 	ports.forEach( function( port ) {
 	console.log( "comName: ", port.comName );
@@ -48,10 +50,11 @@ usbModem.on( 'open', function() {
 		if ( GPSParser.parse( data ) && socketIO ) {
 			var state = GPSParser.getState();
 			socketIO.emit( 'gps-data', state );
-			// console.log( state );
+			console.log( state );
 		}
 	} );
 } );
+*/
 
 // Start serving sockets
 
