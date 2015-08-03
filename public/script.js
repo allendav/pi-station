@@ -5,7 +5,7 @@ var cx = polarGraphSize / 2.0;
 var cy = polarGraphSize / 2.0;
 
 var tles = [];
-var upcomingPasses = [];
+var passes = [];
 var favoriteIDs = [
 	7530,  // AMSAT OSCAR 7
 	24278, // FO-29 / JAS 2
@@ -87,6 +87,7 @@ function drawPolarGraph() {
 	}
 }
 
+// TODO: Make more generic, or split GPS satellite plotting out separately
 function plotSatellites( satellites ) {
 
 	// Plot each satellite
@@ -106,74 +107,106 @@ function plotSatellites( satellites ) {
 	} );
 }
 
-function updateFavoritesTable( satellites ) {
+function renderInViewList() {
+	// Iterate over the passes list, rendering satellites currently in-view
 
 	var html = '';
-
-	satellites.forEach( function( favorite ) {
-		html += "<p";
-		if ( favorite.elevation >= 0.0 ) {
-			html += " class='in-view'";
-		}
-		html += "><a href='http://www.n2yo.com/?s=";
-		html += favorite.id;
-		html += "' target='_blank'>";
-		html += favorite.name;
-		html += "</a>";
-		html += "<br/>";
-		html += "Az: ";
-		html += favorite.azimuth;
-		html += ", El: ";
-		html += favorite.elevation;
-
-		if ( favorite.elevation < 0.0 ) {
-			var nextPass = getNextPass( favorite.id );
-			if ( false !== nextPass ) {
-				var next = new Date();
-				next.setTime( nextPass.startTime );
-				var m = moment( next );
-
-				html += '<br/>Next pass is ';
-				html += m.fromNow();
-				html += ' (maxEl: ';
-				html += nextPass.maxEl;
-				html += ')';
-			}
-		}
-
-		html += "</p>";
-
-	} );
-
-	jQuery( "#favorites" ).html( html );
-}
-
-function getNextPass( satelliteID ) {
-	// returns the next pass for the given satelliteID
-	// returns false if we have no more passes in the store for this satelliteID
-
-	var nextPass = false;
 	var now = new Date();
 	var nowTime = now.getTime();
 
-	var passes = _.filter( upcomingPasses, function( pass ) {
-		return ( pass.id === satelliteID );
-	} );
-
 	passes.forEach( function( pass ) {
-		// note: assumes the passes are in chronological order in the store
-		if ( ! nextPass && nowTime <= pass.startTime ) {
-			nextPass = pass;
+		if ( nowTime >= pass.startTime && nowTime <= pass.endTime ) {
+
+			var position = findPositionOfSatellite( pass.id, now );
+
+			var tle = _.findWhere( tles, { id: pass.id } );
+
+			html += "<p class='in-view'>";
+			html += "<a href='http://www.n2yo.com/?s=";
+			html += pass.id;
+			html += "' target='_blank'>";
+			html += tle.satName;
+			html += "</a>";
+
+			html += "<br/>";
+			html += "Az: ";
+			html += position.azimuth;
+			html += ", El: ";
+			html += position.elevation;
+
+			html += ' (maxEl: ';
+			html += pass.maxEl;
+			html += ')';
+
+			var next = new Date();
+			next.setTime( pass.endTime );
+			var m = moment( next );
+
+			html += '<br/>Pass ends ';
+			html += m.fromNow();
+
+			// TOOD notes
+
+			html += "</p>";
 		}
 	} );
 
-	return nextPass;
+	if ( html.length ) {
+
+		html = "<h2>Satellites in View</h2>" + html;
+	}
+
+	jQuery( "#current-passes" ).html( html );
 }
 
+function renderUpcomingPassesList() {
+	// Iterate over the passes list, rendering satellites not-yet-in-view
 
-function findUpcomingPassesOfFavorites() {
+	var html = '';
+	var now = new Date();
+	var nowTime = now.getTime();
 
-	upcomingPasses = [];
+	passes.forEach( function( pass ) {
+		if ( nowTime <= pass.startTime ) {
+
+			var tle = _.findWhere( tles, { id: pass.id } );
+
+			html += "<p class='in-view'>";
+			html += "</p>";
+			html += "<a href='http://www.n2yo.com/?s=";
+			html += pass.id;
+			html += "' target='_blank'>";
+			html += tle.satName;
+			html += "</a>";
+
+			html += "<br/>";
+
+			var next = new Date();
+			next.setTime( pass.startTime );
+			var m = moment( next );
+
+			html += 'Begins ';
+			html += m.fromNow();
+			html += ' (maxEl: ';
+			html += pass.maxEl;
+			html += ')';
+
+			html += "</p>";
+		}
+	} );
+
+	if ( html.length ) {
+
+		html = "<h2>Upcoming Passes</h2>" + html;
+	}
+
+	jQuery( "#upcoming-passes" ).html( html );
+}
+
+// TODO - move this to the server side
+function findPassesOfFavorites() {
+
+	passes = [];
 
 	var now = new Date();
 	var nowTime = now.getTime();
@@ -208,7 +241,7 @@ function findUpcomingPassesOfFavorites() {
 
 						// save the record if Elevation got to at least 15 degrees
 						if ( maxEl >= 15.0 ) {
-							upcomingPasses.push( {
+							passes.push( {
 								id : favoriteID,
 								startTime: startTime,
 								startAz: startAz,
@@ -237,8 +270,19 @@ function findUpcomingPassesOfFavorites() {
 
 	} );
 
-	// dump the pass database for debugging
-	console.log( upcomingPasses );
+	passes = passes.sort( function( a, b ) {
+
+		if ( a.startTime < b.startTime ) {
+			return -1;
+		}
+
+		if ( a.startTime > b.startTime ) {
+			return 1;
+		}
+
+		return 0;
+	} );
+
 }
 
 function findPositionOfSatellite( satelliteID, dateTime ) {
@@ -325,7 +369,9 @@ function findCurrentPositionOfFavorites() {
 
 	plotSatellites( favoritesToPlot );
 
-	updateFavoritesTable( favoritesPositions );
+	renderInViewList();
+
+	renderUpcomingPassesList();
 
 }
 
@@ -346,7 +392,7 @@ $( document ).ready( function() {
 	// listener, whenever the server emits 'tle-data', this updates the chat body
 	socket.on( 'tle-data', function( data ) {
 		tles = data;
-		findUpcomingPassesOfFavorites();
+		findPassesOfFavorites();
 	} );
 
 	setInterval( function() {
