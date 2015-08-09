@@ -9,3 +9,8 @@ a {
 .in-view a {
 	color: #ffff00;
 }
+
+.note {
+	font-style: italic;
+	color: #cccccc;
+}

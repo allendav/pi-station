@@ -17,7 +17,6 @@ console.log( '*** Bootstrapping TLE service ***' );
 var tleStore = new TLEStore();
 
 tleStore.on( 'change', function( store ) {
-	console.log( 'received tle change notification' );
 	if ( socketIO ) {
 		// update connected clients
 		socketIO.emit( 'tle-data', tleStore.getTLE() );
@@ -65,16 +64,14 @@ var server = app.listen( 8080, function() {
 	var host = server.address().address;
 	var port = server.address().port;
 	socketIO = SocketIO.listen( server );
-	console.log( 'Listening at http://%s:%s', host, port );
 
 	socketIO.on( 'connection', function( socket ) {
-		console.log( 'we have a new connection' );
 		// if we have any poo, fling it now
 		if ( tleStore.isTLEAvailable() ) {
-			console.log( 'sending them tle-data' );
-			socket.emit( 'tle-data', tleStore.getTLE() );
-		} else {
-			console.log( 'nothing available to send them yet' );
+			socket.emit( 'tle-data', {
+				tle: tleStore.getTLE(),
+				lastModified: tleStore.getLastModified()
+				} );
 		}
 	} );
 

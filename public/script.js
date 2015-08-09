@@ -5,6 +5,7 @@ var cx = polarGraphSize / 2.0;
 var cy = polarGraphSize / 2.0;
 
 var tles = [];
+var lastModified = false;
 var passes = [];
 var favoriteIDs = [
 	7530,  // AMSAT OSCAR 7
@@ -12,7 +13,40 @@ var favoriteIDs = [
 	25544, // ISS
 	27607, // SAUDISAT 50
 	36122, // HOPE 1
-	39444  // Funcube 1
+	39444, // Funcube 1
+	39770  // Sprout
+];
+
+// TODO: move these to the server
+var notes = [
+	{
+		id: 7530,
+		text: 'TLM Beacon: Downlink 145.9775 MHz CW; Uplink: 432.1250 – 432.1750 MHz SSB/CW; Downlink 145.9750 – 145.9250 MHz SSB/CW',
+	},
+	{
+		id: 24278,
+		text: 'Downlink 435.8000 – 435.9000 MHz SSB/CW'
+	},
+	{
+		id: 25544,
+		text: 'Packet Downlink 145.825 MHz'
+	},
+	{
+		id: 27607,
+		text: 'Uplink: 145.850 MHz (67.0 Hz PL Tone) SO-50 also has a 10 minute timer that must be armed before use. Transmit a 2 second carrier with a PL tone of 74.4 to arm the timer.; Downlink: 436.800 MHz'
+	},
+	{
+		id: 36122,
+		text: 'Downlink 435.7900 MHz CW Beacon; 435.6750 MHz FM Voice repeater; 435.7650 – 435.7150 MHz SSB/CW Linear transponder (inverted); 435.6750 MHz 1k2 AFSK FM'
+	},
+	{
+		id: 39444,
+		text: '145.935 MHz BPSK Telemetry; Transponder (eclipse only): 435.150 – 435.130 MHz Uplink; – 145.950 – 145.970 MHz Downlink'
+	},
+	{
+		id: 39770,
+		text: '437.525 MHz FM 1k2 AFSK AX.25, CW, SSTV Downlink'
+	},
 ];
 
 function convertAzElToXY( azdeg, eldeg ) {
@@ -114,6 +148,8 @@ function renderInViewList() {
 	var now = new Date();
 	var nowTime = now.getTime();
 
+	drawPolarGraph();
+
 	passes.forEach( function( pass ) {
 		if ( nowTime >= pass.startTime && nowTime <= pass.endTime ) {
 
@@ -131,12 +167,13 @@ function renderInViewList() {
 			html += "<br/>";
 			html += "Az: ";
 			html += position.azimuth;
-			html += ", El: ";
+			html += "&deg;, El: ";
 			html += position.elevation;
+			html += "&deg;";
 
-			html += ' (maxEl: ';
+			html += ' (max El: ';
 			html += pass.maxEl;
-			html += ')';
+			html += '&deg;)';
 
 			var next = new Date();
 			next.setTime( pass.endTime );
@@ -145,16 +182,49 @@ function renderInViewList() {
 			html += '<br/>Pass ends ';
 			html += m.fromNow();
 
-			// TOOD notes
+			var note = _.findWhere( notes, { id: pass.id } );
+			html += '<br/>';
+			html += '<span class="note">';
+			html += note.text;
+			html += '</span>';
 
 			html += "</p>";
+
+			// Plot passes
+
+			// So, this doesn't work - for passes already in progress, startAz doesn't have an El of 0.0
+			// also probably need some more points for the spline
+
+			// var p1 = convertAzElToXY( pass.startAz, 0 );
+			// var p2 = convertAzElToXY( pass.maxElAz, pass.maxEl );
+			// var p3 = convertAzElToXY( pass.endAz, 0 );
+
+			// var track = paper.path( "M" + p1.x + "," + p1.y + " R" + p2.x + "," + p2.y + " " + p3.x + "," + p3.y );
+			// track.attr( "stroke", "#0a0" );
+
+			var satCenter = convertAzElToXY( position.azimuth, position.elevation );
+			var satSprite = paper.circle( satCenter.x, satCenter.y, 10 );
+			satSprite.attr( "stroke", "#0f0" );
+			satSprite.attr( "fill", "#0f0" );
+
+			var satLabel = paper.text( satCenter.x, satCenter.y - 20, tle.satName );
+			satLabel.attr( "font-size", "14" );
+			satLabel.attr( "stroke", "#ccc" );
+			satLabel.attr( "fill", "#ccc" );
+
 		}
 	} );
 
 	if ( html.length ) {
-
 		html = "<h2>Satellites in View</h2>" + html;
 	}
+
+	var m = moment( lastModified );
+
+	html = "<p>Two Line Elements Generated: " + lastModified + "<br/>(" + m.fromNow() + ")</p>" + html;
+
+	html = "<p>Current Time: " + now.toString() + "</p>" + html;
+
 
 	jQuery( "#current-passes" ).html( html );
 }
@@ -165,6 +235,7 @@ function renderUpcomingPassesList() {
 	var html = '';
 	var now = new Date();
 	var nowTime = now.getTime();
+	var renderedFirst = false;
 
 	passes.forEach( function( pass ) {
 		if ( nowTime <= pass.startTime ) {
@@ -187,9 +258,25 @@ function renderUpcomingPassesList() {
 
 			html += 'Begins ';
 			html += m.fromNow();
-			html += ' (maxEl: ';
+			html += ' (max El: ';
 			html += pass.maxEl;
-			html += ')';
+			html += '&deg;)';
+
+			if ( ! renderedFirst ) {
+				html += "<br/>";
+				html += 'Start Az: ';
+				html += pass.startAz;
+				html += "&deg;";
+
+				var note = _.findWhere( notes, { id: pass.id } );
+				html += '<br/>';
+				html += '<span class="note">';
+				html += '<i>' + note.text + '</i>';
+				html += '</span>';
+
+				renderedFirst = true;
+			}
+
 
 			html += "</p>";
 		}
@@ -365,9 +452,9 @@ function findCurrentPositionOfFavorites() {
 
 	} );
 
-	drawPolarGraph();
+	// drawPolarGraph();
 
-	plotSatellites( favoritesToPlot );
+	// plotSatellites( favoritesToPlot );
 
 	renderInViewList();
 
@@ -391,7 +478,8 @@ $( document ).ready( function() {
 
 	// listener, whenever the server emits 'tle-data', this updates the chat body
 	socket.on( 'tle-data', function( data ) {
-		tles = data;
+		tles = data.tle;
+		lastModified = new Date( data.lastModified );
 		findPassesOfFavorites();
 	} );
 
