@@ -229,67 +229,6 @@ function renderInViewList() {
 	jQuery( "#current-passes" ).html( html );
 }
 
-function renderUpcomingPassesList() {
-	// Iterate over the passes list, rendering satellites not-yet-in-view
-
-	var html = '';
-	var now = new Date();
-	var nowTime = now.getTime();
-	var renderedFirst = false;
-
-	passes.forEach( function( pass ) {
-		if ( nowTime <= pass.startTime ) {
-
-			var tle = _.findWhere( tles, { id: pass.id } );
-
-			html += "<p class='in-view'>";
-			html += "</p>";
-			html += "<a href='http://www.n2yo.com/?s=";
-			html += pass.id;
-			html += "' target='_blank'>";
-			html += tle.satName;
-			html += "</a>";
-
-			html += "<br/>";
-
-			var next = new Date();
-			next.setTime( pass.startTime );
-			var m = moment( next );
-
-			html += 'Begins ';
-			html += m.fromNow();
-			html += ' (max El: ';
-			html += pass.maxEl;
-			html += '&deg;)';
-
-			if ( ! renderedFirst ) {
-				html += "<br/>";
-				html += 'Start Az: ';
-				html += pass.startAz;
-				html += "&deg;";
-
-				var note = _.findWhere( notes, { id: pass.id } );
-				html += '<br/>';
-				html += '<span class="note">';
-				html += '<i>' + note.text + '</i>';
-				html += '</span>';
-
-				renderedFirst = true;
-			}
-
-
-			html += "</p>";
-		}
-	} );
-
-	if ( html.length ) {
-
-		html = "<h2>Upcoming Passes</h2>" + html;
-	}
-
-	jQuery( "#upcoming-passes" ).html( html );
-}
-
 // TODO - move this to the server side
 function findPassesOfFavorites() {
 
@@ -458,11 +397,9 @@ function findCurrentPositionOfFavorites() {
 
 	renderInViewList();
 
-	renderUpcomingPassesList();
-
 }
 
-$( document ).ready( function() {
+jQuery( document ).ready( function( $ ) {
 	// Creates canvas 320 × 200 at 10, 50
 	paper = Raphael( 50, 50, polarGraphSize, polarGraphSize );
 
@@ -486,6 +423,11 @@ $( document ).ready( function() {
 	setInterval( function() {
 		if ( tles.length ) {
 			findCurrentPositionOfFavorites();
+
+			React.render(
+				React.createElement( DgxUpcomingPasses, { passes: passes, satellites: tles } ), document.getElementById( 'react-upcoming-passes' )
+			);
+
 		}
 	}, 1000 );
 
