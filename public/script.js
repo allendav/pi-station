@@ -154,41 +154,7 @@ function renderInViewList() {
 		if ( nowTime >= pass.startTime && nowTime <= pass.endTime ) {
 
 			var position = findPositionOfSatellite( pass.id, now );
-
 			var tle = _.findWhere( tles, { id: pass.id } );
-
-			html += "<p class='in-view'>";
-			html += "<a href='http://www.n2yo.com/?s=";
-			html += pass.id;
-			html += "' target='_blank'>";
-			html += tle.satName;
-			html += "</a>";
-
-			html += "<br/>";
-			html += "Az: ";
-			html += position.azimuth;
-			html += "&deg;, El: ";
-			html += position.elevation;
-			html += "&deg;";
-
-			html += ' (max El: ';
-			html += pass.maxEl;
-			html += '&deg;)';
-
-			var next = new Date();
-			next.setTime( pass.endTime );
-			var m = moment( next );
-
-			html += '<br/>Pass ends ';
-			html += m.fromNow();
-
-			var note = _.findWhere( notes, { id: pass.id } );
-			html += '<br/>';
-			html += '<span class="note">';
-			html += note.text;
-			html += '</span>';
-
-			html += "</p>";
 
 			// Plot passes
 
@@ -215,18 +181,15 @@ function renderInViewList() {
 		}
 	} );
 
-	if ( html.length ) {
-		html = "<h2>Satellites in View</h2>" + html;
-	}
-
 	var m = moment( lastModified );
 
-	html = "<p>Two Line Elements Generated: " + lastModified + "<br/>(" + m.fromNow() + ")</p>" + html;
+	var html = "<h2>System Status</h2>";
+	html += "<div class='inner-status'";
+	html += "<p>Current Time: " + now.toString() + "</p>";
+	html += "<p>Two Line Elements were updated " + m.fromNow() + "</p>";
+	html += "</div>";
 
-	html = "<p>Current Time: " + now.toString() + "</p>" + html;
-
-
-	jQuery( "#current-passes" ).html( html );
+	jQuery( "#system-status" ).html( html );
 }
 
 // TODO - move this to the server side
@@ -425,8 +388,13 @@ jQuery( document ).ready( function( $ ) {
 			findCurrentPositionOfFavorites();
 
 			React.render(
-				React.createElement( DgxUpcomingPasses, { passes: passes, satellites: tles } ), document.getElementById( 'react-upcoming-passes' )
+				React.createElement( DgxUpcomingPasses, { passes: passes, satellites: tles } ), document.getElementById( 'upcoming-passes' )
 			);
+
+			React.render(
+				React.createElement( DgxCurrentlyInView, { passes: passes, satellites: tles } ), document.getElementById( 'currently-in-view' )
+			);
+
 
 		}
 	}, 1000 );

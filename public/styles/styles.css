@@ -14,3 +14,40 @@ a {
 	font-style: italic;
 	color: #cccccc;
 }
+
+.upcoming-passes, .system-status {
+	background-color: #444;
+	padding: 12px;
+	border-radius: 4px;
+	margin-bottom: 6px;
+}
+
+.currently-in-view {
+	background-color: #777;
+	padding: 12px;
+	border-radius: 4px;
+	margin-bottom: 6px;
+}
+
+.upcoming-passes h2, .currently-in-view h2, .system-status h2 {
+	margin: 0 0 12px 0;
+	color: #000;
+}
+
+.satellite {
+	background-color: #111;
+	padding: 12px;
+	margin-bottom: 6px;
+	border-radius: 4px;
+}
+
+.satellite-subtitle {
+	float: right;
+}
+
+.inner-status {
+	background-color: #111;
+	padding: 12px;
+	margin-bottom: 6px;
+	border-radius: 4px;
+}

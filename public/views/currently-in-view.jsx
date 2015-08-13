@@ -1,4 +1,4 @@
-var DgxUpcomingPasses = React.createClass( {
+var DgxCurrentlyInView = React.createClass( {
 
 	propTypes: {
 		passes: React.PropTypes.array.isRequired,
@@ -6,43 +6,45 @@ var DgxUpcomingPasses = React.createClass( {
 	},
 
 	render: function() {
+		var passesToShow = [];
 		var now = new Date();
 		var nowTime = now.getTime();
 		var tle;
 		var key;
 		var numberRendered = 0;
 
-		// Iterate over passes finding passes in the future
+		// Iterate over passes finding passes currently visible
 		// and return just those passes
+
+		// If there are none, return null
+
+		this.props.passes.forEach( function( pass ) {
+			if ( nowTime >= pass.startTime && nowTime <= pass.endTime ) {
+				passesToShow.push( pass );
+			}
+		} );
+
+		if ( 0 === passesToShow.length ) {
+			return null;
+		}
+
 		return (
-			<div className='upcoming-passes'>
+			<div className='currently-in-view'>
 				<h2>
-					Upcoming Passes
+					Currently in View
 				</h2>
 				{
-					this.props.passes.map( function( pass ) {
+					passesToShow.map( function( pass ) {
 						tle = _.findWhere( tles, { id: pass.id } );
 						note = _.findWhere( notes, { id: pass.id } );
 						key = '' + pass.id + '-' + pass.startTime;
-
-						if ( pass.startTime < nowTime ) {
-							return null;
-						}
-
-						numberRendered++;
-
-						if ( numberRendered > 1 ) {
-							note = false;
-						} else {
-							note = note.text;
-						}
 
 						return (
 							<DgxSatellite
 								key={ key }
 								pass={ pass }
 								satellite={ tle }
-								note={ note }/>
+								note={ note.text }/>
 						);
 					} )
 				}
