@@ -10,24 +10,42 @@ var DgxUpcomingPasses = React.createClass( {
 		var nowTime = now.getTime();
 		var tle;
 		var key;
+		var passes;
 		var numberRendered = 0;
 
-		// Iterate over passes finding passes in the future
-		// and return just those passes
+		// Find all satellites with passes ending in the future
+		var satelliteIDs = [];
+		this.props.passes.map( function( pass ) {
+			if ( pass.endTime > nowTime ) {
+				if ( -1 === satelliteIDs.indexOf( pass.id ) ) {
+					satelliteIDs.push( pass.id );
+				}
+			};
+		} );
+
 		return (
 			<div className='upcoming-passes'>
 				<h2>
 					Upcoming Passes
 				</h2>
 				{
-					this.props.passes.map( function( pass ) {
-						tle = _.findWhere( tles, { id: pass.id } );
-						note = _.findWhere( notes, { id: pass.id } );
-						key = '' + pass.id + '-' + pass.startTime;
+					satelliteIDs.map( function( satelliteID ) {
+						tle = _.findWhere( this.props.satellites, { id: satelliteID } );
+						note = _.findWhere( this.props.notes, { id: satelliteID} );
 
-						if ( pass.startTime < nowTime ) {
+						passes = this.props.passes.filter( function( p ) {
+							if ( p.startTime < nowTime ) {
+								return false;
+							}
+							return ( satelliteID === p.id );
+						} );
+
+						if ( 0 === passes.length ) {
 							return null;
 						}
+
+						pass = passes[0];
+						key = '' + pass.id + '-' + pass.startTime;
 
 						numberRendered++;
 
@@ -42,9 +60,10 @@ var DgxUpcomingPasses = React.createClass( {
 								key={ key }
 								pass={ pass }
 								satellite={ tle }
-								note={ note }/>
+								note={ note }
+								passes={ passes } />
 						);
-					} )
+					}.bind( this ) )
 				}
 			</div>
 		);

@@ -4,50 +4,60 @@ var fullRadius = 0.90 * polarGraphSize / 2.0;
 var cx = polarGraphSize / 2.0;
 var cy = polarGraphSize / 2.0;
 
-var tles = [];
-var lastModified = false;
-var passes = [];
-var favoriteIDs = [
-	7530,  // AMSAT OSCAR 7
-	24278, // FO-29 / JAS 2
-	25544, // ISS
-	27607, // SAUDISAT 50
-	36122, // HOPE 1
-	39444, // Funcube 1
-	39770  // Sprout
-];
-
-// TODO: move these to the server
-var notes = [
-	{
-		id: 7530,
-		text: 'TLM Beacon: Downlink 145.9775 MHz CW; Uplink: 432.1250 – 432.1750 MHz SSB/CW; Downlink 145.9750 – 145.9250 MHz SSB/CW',
-	},
-	{
-		id: 24278,
-		text: 'Downlink 435.8000 – 435.9000 MHz SSB/CW'
-	},
-	{
-		id: 25544,
-		text: 'Packet Downlink 145.825 MHz'
-	},
-	{
-		id: 27607,
-		text: 'Uplink: 145.850 MHz (67.0 Hz PL Tone) SO-50 also has a 10 minute timer that must be armed before use. Transmit a 2 second carrier with a PL tone of 74.4 to arm the timer.; Downlink: 436.800 MHz'
-	},
-	{
-		id: 36122,
-		text: 'Downlink 435.7900 MHz CW Beacon; 435.6750 MHz FM Voice repeater; 435.7650 – 435.7150 MHz SSB/CW Linear transponder (inverted); 435.6750 MHz 1k2 AFSK FM'
-	},
-	{
-		id: 39444,
-		text: '145.935 MHz BPSK Telemetry; Transponder (eclipse only): 435.150 – 435.130 MHz Uplink; – 145.950 – 145.970 MHz Downlink'
-	},
-	{
-		id: 39770,
-		text: '437.525 MHz FM 1k2 AFSK AX.25, CW, SSTV Downlink'
-	},
-];
+var coreStore = {
+	tles: [],
+	lastModified: false,
+	passes: [],
+	favoriteIDs: [
+		7530,  // AMSAT OSCAR 7
+		24278, // FO-29 / JAS 2
+		25544, // ISS
+		27607, // SAUDISAT 50
+		27844, // CUTE 1
+		32789, // Delfi-C3
+		36122, // HOPE 1
+		39444, // Funcube 1
+		39770  // Sprout
+	],
+	notes: [
+		{
+			id: 7530,
+			text: 'TLM Beacon: Downlink 145.9775 MHz CW; Uplink: 432.1250 – 432.1750 MHz SSB/CW; Downlink 145.9750 – 145.9250 MHz SSB/CW',
+		},
+		{
+			id: 24278,
+			text: 'Downlink 435.8000 – 435.9000 MHz SSB/CW'
+		},
+		{
+			id: 25544,
+			text: 'Packet Downlink 145.825 MHz'
+		},
+		{
+			id: 27607,
+			text: 'Uplink: 145.850 MHz (67.0 Hz PL Tone) SO-50 also has a 10 minute timer that must be armed before use. Transmit a 2 second carrier with a PL tone of 74.4 to arm the timer.; Downlink: 436.800 MHz'
+		},
+		{
+			id: 27844,
+			text: 'Downlinks on CW Beacon 436.8375, packet 437.470'
+		},
+		{
+			id: 32789,
+			text: 'Downlink: 145.870 MHz, 1200 Baud, BPSK, AX.25, 100mW operational in Sun'
+		},
+		{
+			id: 36122,
+			text: 'Downlink 435.7900 MHz CW Beacon; 435.6750 MHz FM Voice repeater; 435.7650 – 435.7150 MHz SSB/CW Linear transponder (inverted); 435.6750 MHz 1k2 AFSK FM'
+		},
+		{
+			id: 39444,
+			text: '145.935 MHz BPSK Telemetry; Transponder (eclipse only): 435.150 – 435.130 MHz Uplink; – 145.950 – 145.970 MHz Downlink'
+		},
+		{
+			id: 39770,
+			text: '437.525 MHz FM 1k2 AFSK AX.25, CW, SSTV Downlink'
+		},
+	]
+};
 
 function convertAzElToXY( azdeg, eldeg ) {
 	var radius = fullRadius * ( 90.0 - eldeg ) / 90.0;
@@ -65,29 +75,6 @@ function numberToHex( number ) {
 	}
 
 	return hex;
-}
-
-function getColorMapValue( min, current, max ) {
-	var red, green, blue, color;
-	var midpoint = 0.5 * ( max - min );
-
-	var percent = Math.floor( 100.0 * ( current - min ) / ( max - min ) );
-
-	if ( percent > 50 ) {
-		red = 255 - Math.floor( 255.0 * ( percent - 50 ) / 50 );
-		green = 255;
-		blue = 0;
-	} else if ( percent < 5 ) {
-		red = 80;
-		blue = 80;
-		green = 80;
-	} else {
-		red = 255;
-		green = Math.floor( 255 * percent / 50 );
-		blue = 0;
-	}
-
-	return "#" + numberToHex( red ) + numberToHex( green ) + numberToHex( blue );
 }
 
 function drawPolarGraph() {
@@ -129,9 +116,8 @@ function plotSatellites( satellites ) {
 		if ( null !== satellite.azimuth && null !== satellite.elevation ) {
 			var satCenter = convertAzElToXY( satellite.azimuth, satellite.elevation );
 			var satSprite = paper.circle( satCenter.x, satCenter.y, 10 );
-			var color = getColorMapValue( 0, satellite.snr, 100 );
-			satSprite.attr( "stroke", color );
-			satSprite.attr( "fill", color );
+			satSprite.attr( "stroke", "#aaaa00" );
+			satSprite.attr( "fill", "#aaaa00" );
 
 			var satLabel = paper.text( satCenter.x, satCenter.y - 20, satellite.prn );
 			satLabel.attr( "font-size", "14" );
@@ -150,11 +136,11 @@ function renderInViewList() {
 
 	drawPolarGraph();
 
-	passes.forEach( function( pass ) {
+	coreStore.passes.forEach( function( pass ) {
 		if ( nowTime >= pass.startTime && nowTime <= pass.endTime ) {
 
 			var position = findPositionOfSatellite( pass.id, now );
-			var tle = _.findWhere( tles, { id: pass.id } );
+			var tle = _.findWhere( coreStore.tles, { id: pass.id } );
 
 			// Plot passes
 
@@ -170,8 +156,8 @@ function renderInViewList() {
 
 			var satCenter = convertAzElToXY( position.azimuth, position.elevation );
 			var satSprite = paper.circle( satCenter.x, satCenter.y, 10 );
-			satSprite.attr( "stroke", "#0f0" );
-			satSprite.attr( "fill", "#0f0" );
+			satSprite.attr( "stroke", "#ffff00" );
+			satSprite.attr( "fill", "#ffff00" );
 
 			var satLabel = paper.text( satCenter.x, satCenter.y - 20, tle.satName );
 			satLabel.attr( "font-size", "14" );
@@ -181,7 +167,7 @@ function renderInViewList() {
 		}
 	} );
 
-	var m = moment( lastModified );
+	var m = moment( coreStore.lastModified );
 
 	var html = "<h2>System Status</h2>";
 	html += "<div class='inner-status'";
@@ -195,15 +181,15 @@ function renderInViewList() {
 // TODO - move this to the server side
 function findPassesOfFavorites() {
 
-	passes = [];
+	coreStore.passes = [];
 
 	var now = new Date();
 	var nowTime = now.getTime();
 	var then = new Date();
 	var thenTime = then.getTime();
 
-	favoriteIDs.forEach( function( favoriteID ) {
-		var favoriteTLE = _.findWhere( tles, { id: favoriteID } );
+	coreStore.favoriteIDs.forEach( function( favoriteID ) {
+		var favoriteTLE = _.findWhere( coreStore.tles, { id: favoriteID } );
 
 		var inPass = false;
 		var position;
@@ -230,7 +216,7 @@ function findPassesOfFavorites() {
 
 						// save the record if Elevation got to at least 15 degrees
 						if ( maxEl >= 15.0 ) {
-							passes.push( {
+							coreStore.passes.push( {
 								id : favoriteID,
 								startTime: startTime,
 								startAz: startAz,
@@ -259,7 +245,7 @@ function findPassesOfFavorites() {
 
 	} );
 
-	passes = passes.sort( function( a, b ) {
+	coreStore.passes = coreStore.passes.sort( function( a, b ) {
 
 		if ( a.startTime < b.startTime ) {
 			return -1;
@@ -278,7 +264,7 @@ function findPositionOfSatellite( satelliteID, dateTime ) {
 
 	var azimuth = null;
 	var elevation = null;
-	var satelliteTLE = _.findWhere( tles, { id: satelliteID } );
+	var satelliteTLE = _.findWhere( coreStore.tles, { id: satelliteID } );
 
 	if ( satelliteTLE ) {
 		var satrec = satellite.twoline2satrec( satelliteTLE.tleLine1, satelliteTLE.tleLine2 );
@@ -331,9 +317,9 @@ function findCurrentPositionOfFavorites() {
 	var favoritesToPlot = [];
 	var now = new Date();
 
-	favoriteIDs.forEach( function( favoriteID ) {
+	coreStore.favoriteIDs.forEach( function( favoriteID ) {
 
-		var favoriteTLE = _.findWhere( tles, { id: favoriteID } );
+		var favoriteTLE = _.findWhere( coreStore.tles, { id: favoriteID } );
 		var position = findPositionOfSatellite( favoriteID, now );
 
 		if ( position.elevation >= 0 ) {
@@ -378,21 +364,29 @@ jQuery( document ).ready( function( $ ) {
 
 	// listener, whenever the server emits 'tle-data', this updates the chat body
 	socket.on( 'tle-data', function( data ) {
-		tles = data.tle;
-		lastModified = new Date( data.lastModified );
+		coreStore.tles = data.tle;
+		coreStore.lastModified = new Date( data.lastModified );
 		findPassesOfFavorites();
 	} );
 
 	setInterval( function() {
-		if ( tles.length ) {
+		if ( coreStore.tles.length ) {
 			findCurrentPositionOfFavorites();
 
 			React.render(
-				React.createElement( DgxUpcomingPasses, { passes: passes, satellites: tles } ), document.getElementById( 'upcoming-passes' )
+				React.createElement( DgxUpcomingPasses, {
+					passes: coreStore.passes,
+					satellites: coreStore.tles,
+					notes: coreStore.notes
+				} ), document.getElementById( 'upcoming-passes' )
 			);
 
 			React.render(
-				React.createElement( DgxCurrentlyInView, { passes: passes, satellites: tles } ), document.getElementById( 'currently-in-view' )
+				React.createElement( DgxCurrentlyInView, {
+					passes: coreStore.passes,
+					satellites: coreStore.tles,
+					notes: coreStore.notes
+				} ), document.getElementById( 'currently-in-view' )
 			);
 
 

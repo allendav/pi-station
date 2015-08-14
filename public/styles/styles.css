@@ -1,5 +1,5 @@
 .in-view {
-	color: #ffff00;
+	color: #aaaa00;
 }
 
 a {
@@ -7,12 +7,12 @@ a {
 }
 
 .in-view a {
-	color: #ffff00;
+	color: #aaaa00;
 }
 
 .note {
 	font-style: italic;
-	color: #cccccc;
+	color: #aaa;
 }
 
 .upcoming-passes, .system-status {
@@ -50,4 +50,47 @@ a {
 	padding: 12px;
 	margin-bottom: 6px;
 	border-radius: 4px;
+	color: #aaa;
+}
+
+table.passes {
+	width: 100%;
+}
+
+.passes th {
+	background: #333;
+	color: #000;
+	padding: 2px;
+}
+
+.passes td {
+	text-align: center;
+	padding: 5px;
+}
+
+.passes tr.even {
+	background: #000;
+}
+
+.passes {
+	color: #777;
+	font-family: sans, helvetica, arial;
+	font-weight: normal;
+	font-size: 14px;
+}
+
+.currently-in-view .passes tr {
+	color: #aaaa00;
+}
+
+.upcoming-passes .passes tr.good, .upcoming-passes span.good {
+	color: #00aa00;
+}
+
+.upcoming-passes .satellite-subtitle {
+	color: #bbb;
+}
+
+.currently-in-view .satellite-subtitle {
+	color: #dddd00;
 }

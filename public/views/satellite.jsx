@@ -2,7 +2,8 @@ var DgxSatellite = React.createClass( {
 
 	propTypes: {
 		satellite: React.PropTypes.object.isRequired,
-		pass: React.PropTypes.object.isRequired
+		pass: React.PropTypes.object.isRequired,
+		passes: React.PropTypes.array.isRequired
 	},
 
 	renderSubtitle: function() {
@@ -17,28 +18,34 @@ var DgxSatellite = React.createClass( {
 
 		if ( nowTime < this.props.pass.startTime || nowTime > this.props.pass.endTime ) {
 
-			var starTimeFromNow;
-			starTimeFromNow = moment( startTime ).fromNow();
+			var startTimeFromNow;
+			startTimeFromNow = moment( startTime ).fromNow();
+
+			var classes = classNames( {
+				'satellite-subtitle': true,
+				'good': ( this.props.pass.maxEl >= 30 )
+			} );
 
 			return (
-				<span className="satellite-subtitle">
-					Begins { starTimeFromNow } (max El: { this.props.pass.maxEl }&deg;)
+				<span className={ classes }>
+					Next pass begins { startTimeFromNow } (max El: { this.props.pass.maxEl }&deg;)
 				</span>
 			);
 		}
 
 		var position = findPositionOfSatellite( this.props.pass.id, now );
+		var endTimeFromNow = moment( endTime ).fromNow();
 
 		return (
 			<span className="satellite-subtitle in-view">
-				Az: { position.azimuth }&deg;, El: { position.elevation }&deg; (max El: { this.props.pass.maxEl }&deg;)
+				Az: { position.azimuth }&deg;, El: { position.elevation }&deg;, ends { endTimeFromNow }
 			</span>
 		);
 	},
 
 	possiblyRenderNote: function() {
 		if ( ! this.props.note ) {
-			return;
+			return ( <br/> );
 		}
 
 		return(
@@ -49,7 +56,7 @@ var DgxSatellite = React.createClass( {
 	},
 
 	possiblyRenderPasses: function() {
-		return null;
+		return( <DgxPasses passes={ this.props.passes } /> );
 	},
 
 	render: function() {
