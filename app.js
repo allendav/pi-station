@@ -14,12 +14,32 @@ app.use( express.static( 'public' ) );
 
 console.log( '*** Bootstrapping TLE service ***' );
 
-var tleStore = new TLEStore();
+var tleStoreNOAA = new TLEStore( 'noaa.txt' );
+var tleStoreAmateur = new TLEStore( 'amateur.txt' );
 
-tleStore.on( 'change', function( store ) {
+function getAggregateTLE() {
+	var amateurTLE = tleStoreAmateur.getTLE();
+	var noaaTLE = tleStoreNOAA.getTLE();
+
+	var combinedTLE = amateurTLE.concat( noaaTLE );
+
+	var oldest = ( tleStoreNOAA < tleStoreAmateur ) ? tleStoreNOAA : tleStoreAmateur;
+
+	// TODO - store TLEStores in an iterable array
+	// TOOD - remove any duplicates
+	// TODO - return the oldest of the lastmodified
+	// TODO - mark each TLE separately with a lastModified?
+
+	return ( {
+		tle: combinedTLE,
+		lastModified: oldest
+	} );
+}
+
+tleStoreAmateur.on( 'change', function( store ) {
 	if ( socketIO ) {
 		// update connected clients
-		socketIO.emit( 'tle-data', tleStore.getTLE() );
+		socketIO.emit( 'tle-data', getAggregateTLE() );
 	}
 } );
 
@@ -67,11 +87,8 @@ var server = app.listen( 8080, function() {
 
 	socketIO.on( 'connection', function( socket ) {
 		// if we have any poo, fling it now
-		if ( tleStore.isTLEAvailable() ) {
-			socket.emit( 'tle-data', {
-				tle: tleStore.getTLE(),
-				lastModified: tleStore.getLastModified()
-				} );
+		if ( tleStoreAmateur.isTLEAvailable() ) {
+			socket.emit( 'tle-data', getAggregateTLE() );
 		}
 	} );
 

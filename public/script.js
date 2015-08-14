@@ -11,12 +11,15 @@ var coreStore = {
 	favoriteIDs: [
 		7530,  // AMSAT OSCAR 7
 		24278, // FO-29 / JAS 2
+		25338, // NOAA-15
 		25544, // ISS
 		27607, // SAUDISAT 50
 		27844, // CUTE 1
+		28654, // NOAA-18
 		32789, // Delfi-C3
-		36122, // HOPE 1
-		39444, // Funcube 1
+		33591, // NOAA-19
+		36122, // HOPE-1 aka HO-68
+		39444, // Funcube 1 aka AO-73
 		39770  // Sprout
 	],
 	notes: [
@@ -27,6 +30,10 @@ var coreStore = {
 		{
 			id: 24278,
 			text: 'Downlink 435.8000 – 435.9000 MHz SSB/CW'
+		},
+		{
+			id: 25338,
+			text: 'APT Downlink 137.620 MHz'
 		},
 		{
 			id: 25544,
@@ -41,8 +48,16 @@ var coreStore = {
 			text: 'Downlinks on CW Beacon 436.8375, packet 437.470'
 		},
 		{
+			id: 28654,
+			text: 'APT Downlink 137.9125 MHz'
+		},
+		{
 			id: 32789,
 			text: 'Downlink: 145.870 MHz, 1200 Baud, BPSK, AX.25, 100mW operational in Sun'
+		},
+		{
+			id: 33591,
+			text: 'APT Downlink 137.100 MHz'
 		},
 		{
 			id: 36122,
@@ -318,7 +333,6 @@ function findCurrentPositionOfFavorites() {
 	var now = new Date();
 
 	coreStore.favoriteIDs.forEach( function( favoriteID ) {
-
 		var favoriteTLE = _.findWhere( coreStore.tles, { id: favoriteID } );
 		var position = findPositionOfSatellite( favoriteID, now );
 
