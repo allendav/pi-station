@@ -13,10 +13,10 @@ var DgxUpcomingPasses = React.createClass( {
 		var passes;
 		var numberRendered = 0;
 
-		// Find all satellites with passes ending in the future
+		// Find all satellites with passes beginning in the future
 		var satelliteIDs = [];
 		this.props.passes.map( function( pass ) {
-			if ( pass.endTime > nowTime ) {
+			if ( pass.startTime > nowTime ) {
 				if ( -1 === satelliteIDs.indexOf( pass.id ) ) {
 					satelliteIDs.push( pass.id );
 				}
