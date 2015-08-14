@@ -20,10 +20,12 @@ var tleStoreAmateur = new TLEStore( 'amateur.txt' );
 function getAggregateTLE() {
 	var amateurTLE = tleStoreAmateur.getTLE();
 	var noaaTLE = tleStoreNOAA.getTLE();
-
 	var combinedTLE = amateurTLE.concat( noaaTLE );
 
-	var oldest = ( tleStoreNOAA < tleStoreAmateur ) ? tleStoreNOAA : tleStoreAmateur;
+	var amateurLastModified = tleStoreAmateur.getLastModified();
+	var noaaLastModified = tleStoreNOAA.getLastModified();
+
+	var oldest = ( amateurLastModified < noaaLastModified ) ? amateurLastModified : noaaLastModified;
 
 	// TODO - store TLEStores in an iterable array
 	// TOOD - remove any duplicates
