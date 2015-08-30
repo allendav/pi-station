@@ -50,13 +50,13 @@ tleStoreAmateur.on( 'change', function( store ) {
 
 console.log( '*** Bootstrapping GPS service ***' );
 
-/*
 serialPort.list( function ( err, ports ) {
 	ports.forEach( function( port ) {
 	console.log( "comName: ", port.comName );
 	} );
 } );
 
+/*
 var usbModem = new SerialPort( '/dev/cu.usbmodem14211',
 	{
 		baudrate: 115200,

@@ -24,7 +24,7 @@ var DgxUpcomingPasses = React.createClass( {
 		} );
 
 		return (
-			<div className='upcoming-passes'>
+			<div className='upcoming-passes section'>
 				<h2>
 					Upcoming Passes
 				</h2>

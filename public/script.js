@@ -1,8 +1,14 @@
+/**
+ * Client script for satellite tracking
+ *
+ */
+
+// TODO - move these vars and the graph drawing to a component
 var paper;
-var polarGraphSize = 500.0;
-var fullRadius = 0.90 * polarGraphSize / 2.0;
-var cx = polarGraphSize / 2.0;
-var cy = polarGraphSize / 2.0;
+var polarGraphSize;
+var fullRadius;
+var cx;
+var cy;
 
 var coreStore = {
 	tles: [],
@@ -362,11 +368,36 @@ function findCurrentPositionOfFavorites() {
 
 }
 
-jQuery( document ).ready( function( $ ) {
+function repositionPolarGraphPaper() {
+	var width = $( '#polar-graph-paper' ).width();
+
+	$( '#polar-graph-paper' ).css( { height: width } );
+
+	polarGraphSize = width - 8;
+	fullRadius = 0.90 * polarGraphSize / 2.0;
+	cx = polarGraphSize / 2.0;
+	cy = polarGraphSize / 2.0;
+
+	var offset = $( '#polar-graph-paper' ).offset();
+
+	if ( paper ) {
+		paper.remove();
+		paper = false;
+	}
+
 	// Creates canvas 320 × 200 at 10, 50
-	paper = Raphael( 50, 50, polarGraphSize, polarGraphSize );
+	paper = Raphael( offset.left + 4, offset.top + 4, polarGraphSize, polarGraphSize );
 
 	drawPolarGraph();
+}
+
+jQuery( document ).ready( function( $ ) {
+	// Position drawing area and keep it that way
+	repositionPolarGraphPaper();
+	$( window ).resize( function() {
+		console.log( 'in resize handler' );
+		repositionPolarGraphPaper();
+	} );
 
 	var socket = io.connect();
 

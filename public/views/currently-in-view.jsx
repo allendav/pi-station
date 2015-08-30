@@ -28,7 +28,7 @@ var DgxCurrentlyInView = React.createClass( {
 		}
 
 		return (
-			<div className='currently-in-view'>
+			<div className='currently-in-view section'>
 				<h2>
 					Currently in View
 				</h2>

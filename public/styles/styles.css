@@ -1,3 +1,27 @@
+body {
+	background: #2a2a2a;
+}
+
+#outer {
+	max-width: 1200px;
+	margin: 0 auto;
+	border: 1 px solid white;
+}
+
+#polar-graph {
+	width: 38%;
+}
+
+#polar-graph-paper {
+	background: #111;
+	border-radius: 4px;
+}
+
+#passes {
+	width: 58%;
+	float: right;
+}
+
 .in-view {
 	color: #aaaa00;
 }
@@ -15,7 +39,7 @@ a {
 	color: #aaa;
 }
 
-.upcoming-passes, .system-status {
+.section {
 	background-color: #444;
 	padding: 12px;
 	border-radius: 4px;
@@ -24,12 +48,9 @@ a {
 
 .currently-in-view {
 	background-color: #777;
-	padding: 12px;
-	border-radius: 4px;
-	margin-bottom: 6px;
 }
 
-.upcoming-passes h2, .currently-in-view h2, .system-status h2 {
+.section h2 {
 	margin: 0 0 12px 0;
 	color: #000;
 }
