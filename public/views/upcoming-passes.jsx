@@ -11,7 +11,6 @@ var DgxUpcomingPasses = React.createClass( {
 		var tle;
 		var key;
 		var passes;
-		var numberRendered = 0;
 
 		// Find all satellites with passes beginning in the future
 		var satelliteIDs = [];
@@ -47,20 +46,12 @@ var DgxUpcomingPasses = React.createClass( {
 						pass = passes[0];
 						key = '' + pass.id + '-' + pass.startTime;
 
-						numberRendered++;
-
-						if ( numberRendered > 1 ) {
-							note = false;
-						} else {
-							note = note.text;
-						}
-
 						return (
 							<DgxSatellite
 								key={ key }
 								pass={ pass }
 								satellite={ tle }
-								note={ note }
+								note={ note.text }
 								passes={ passes } />
 						);
 					}.bind( this ) )
