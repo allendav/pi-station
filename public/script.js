@@ -173,16 +173,6 @@ function renderInViewList() {
 
 		}
 	} );
-
-	var m = moment( coreStore.lastModified );
-
-	var html = "<h2>System Status</h2>";
-	html += "<div class='inner-status'";
-	html += "<p>Current Time: " + now.toString() + "</p>";
-	html += "<p>Two Line Elements were updated " + m.fromNow() + "</p>";
-	html += "</div>";
-
-	jQuery( "#system-status" ).html( html );
 }
 
 // TODO - move this to the server side
@@ -397,6 +387,12 @@ jQuery( document ).ready( function( $ ) {
 	} );
 
 	setInterval( function() {
+		React.render(
+			React.createElement( DgxTimeAndLocation, {
+				location: coreStore.location
+			} ), document.getElementById( 'time-and-location' )
+		);
+
 		if ( coreStore.tles.length ) {
 			findCurrentPositionOfFavorites();
 

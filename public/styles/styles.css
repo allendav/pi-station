@@ -74,38 +74,42 @@ a {
 	color: #aaa;
 }
 
-table.passes {
+.section table {
 	width: 100%;
 }
 
-.passes th {
+.section th {
 	background: #333;
 	color: #000;
 	padding: 2px;
+	font-family: sans, helvetica, arial;
+	font-weight: normal;
+	font-size: 14px;
 }
 
-.passes td {
+.section td {
 	text-align: center;
 	padding: 5px;
-}
-
-.passes tr.even {
-	background: #000;
-}
-
-.passes {
 	color: #777;
 	font-family: sans, helvetica, arial;
 	font-weight: normal;
 	font-size: 14px;
 }
 
-.currently-in-view .passes tr {
-	color: #aaaa00;
+.section tr.even {
+	background: #000;
 }
 
-.upcoming-passes .passes tr.good, .upcoming-passes span.good {
-	color: #00aa00;
+table.time-and-location td {
+	padding: 5px 5px 1px 5px;
+}
+
+.currently-in-view table.passes td {
+	color: #aaaa00 !important;
+}
+
+.upcoming-passes table.passes tr.good td {
+	color: #00aa00 !important;
 }
 
 .upcoming-passes .satellite-subtitle {
