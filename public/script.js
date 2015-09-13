@@ -14,6 +14,11 @@ var coreStore = {
 	tles: [],
 	lastModified: false,
 	passes: [],
+	location: {
+		longitude: 0,
+		latitude: 0,
+		altitude: 0
+	},
 	favoriteIDs: [
 		7530,  // AMSAT OSCAR 7
 		24278, // FO-29 / JAS 2
@@ -129,25 +134,6 @@ function drawPolarGraph() {
 	}
 }
 
-// TODO: Make more generic, or split GPS satellite plotting out separately
-function plotSatellites( satellites ) {
-
-	// Plot each satellite
-	satellites.forEach( function( satellite, index, array ) {
-		if ( null !== satellite.azimuth && null !== satellite.elevation ) {
-			var satCenter = convertAzElToXY( satellite.azimuth, satellite.elevation );
-			var satSprite = paper.circle( satCenter.x, satCenter.y, 10 );
-			satSprite.attr( "stroke", "#aaaa00" );
-			satSprite.attr( "fill", "#aaaa00" );
-
-			var satLabel = paper.text( satCenter.x, satCenter.y - 20, satellite.prn );
-			satLabel.attr( "font-size", "14" );
-			satLabel.attr( "stroke", "#ccc" );
-			satLabel.attr( "fill", "#ccc" );
-		}
-	} );
-}
-
 function renderInViewList() {
 	// Iterate over the passes list, rendering satellites currently in-view
 
@@ -201,6 +187,10 @@ function renderInViewList() {
 
 // TODO - move this to the server side
 function findPassesOfFavorites() {
+
+	if ( 0 == coreStore.tles.length ) {
+		return;
+	}
 
 	coreStore.passes = [];
 
@@ -305,11 +295,10 @@ function findPositionOfSatellite( satelliteID, dateTime ) {
 		var deg2rad = Math.PI / 180.;
 		var rad2deg = 1. / deg2rad;
 
-		// TODO: Set from GPS if available
 		var observerGd = {
-			longitude: -121.992397 * deg2rad,
-			latitude: 47.90058 * deg2rad,
-			height: 0.138 // km. above WGS 84 ellipsoid?
+			longitude: coreStore.location.longitude * deg2rad,
+			latitude: coreStore.location.latitude * deg2rad,
+			height: 0.001 * coreStore.location.altitude // m -> km. above WGS 84 ellipsoid?
 		};
 
 		var gmst = satellite.gstimeFromDate(
@@ -360,12 +349,7 @@ function findCurrentPositionOfFavorites() {
 
 	} );
 
-	// drawPolarGraph();
-
-	// plotSatellites( favoritesToPlot );
-
 	renderInViewList();
-
 }
 
 function repositionPolarGraphPaper() {
@@ -395,16 +379,14 @@ jQuery( document ).ready( function( $ ) {
 	// Position drawing area and keep it that way
 	repositionPolarGraphPaper();
 	$( window ).resize( function() {
-		console.log( 'in resize handler' );
 		repositionPolarGraphPaper();
 	} );
 
 	var socket = io.connect();
 
-	// listener, whenever the server emits 'gps-data', this updates the chat body
-	socket.on( 'gps-data', function( data ) {
-		drawPolarGraph();
-		plotSatellites( data.satellites );
+	socket.on( 'location', function( data ) {
+		coreStore.location = data;
+		findPassesOfFavorites();
 	} );
 
 	// listener, whenever the server emits 'tle-data', this updates the chat body

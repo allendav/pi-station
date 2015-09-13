@@ -1,10 +1,17 @@
 {
-	"name": "leeloo",
+	"name": "pi-station",
 	"version": "0.0.1",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/allendav/pi-station"
+	},
+	"license": "GPL-2.0",
 	"description": "GPS monitoring, powered by node.js and socket.io",
 	"dependencies": {
+		"config": "1.16.0",
 		"express": "4.13.1",
-		"socket.io": "1.3.6",
-		"serialport": "1.7.4"
+		"node-gpsd": "0.2.2",
+		"redis": "1.0.0",
+		"socket.io": "1.3.6"
 	}
 }
