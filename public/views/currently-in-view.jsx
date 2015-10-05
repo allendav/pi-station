@@ -36,6 +36,9 @@ var DgxCurrentlyInView = React.createClass( {
 					passesToShow.map( function( pass ) {
 						tle = _.findWhere( this.props.satellites, { id: pass.id } );
 						note = _.findWhere( this.props.notes, { id: pass.id } );
+						if ( 'undefined' === typeof note ) {
+							note = { text: '' };
+						}
 						key = '' + pass.id + '-' + pass.startTime;
 						passes = this.props.passes.filter( function( p ) {
 							return ( pass.id === p.id);

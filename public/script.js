@@ -31,7 +31,15 @@ var coreStore = {
 		33591, // NOAA-19
 		36122, // HOPE-1 aka HO-68
 		39444, // Funcube 1 aka AO-73
-		39770  // Sprout
+		39770, // Sprout
+		40897, // SERPENS
+		40903, // XW-2A
+		40911, // XW-2B
+		40906, // XW-2C
+		40907, // XW-2D
+		40908, // LILACSAT
+		40909, // XW-2E
+		40910  // XW-2F
 	],
 	notes: [
 		{
@@ -81,6 +89,38 @@ var coreStore = {
 		{
 			id: 39770,
 			text: '437.525 MHz FM 1k2 AFSK AX.25, CW, SSTV Downlink'
+		},
+		{
+			id: 40897,
+			text: 'Downlink: 145.980 MHz GFSK modulation at 9600 bps and AX.25 every 10 seconds, 437.365 MHz CW/MSK at 1200 bps and CSP'
+		},
+		{
+			id: 40903,
+			text: 'Downlink: Digital Telemetry 145.640, CW Beacon 145.660, Linear Transponder 145.665 ‐ 145.685'
+		},
+		{
+			id: 40911,
+			text: 'Downlink: Digital Telemetry 145.705, CW Beacon 145.725, Linear Transponder 145.730 ‐ 145.750'
+		},
+		{
+			id: 40906,
+			text: 'Downlink: Digital Telemetry 145.770, CW Beacon 145.790, Linear Transponder 145.795 ‐ 145.815'
+		},
+		{
+			id: 40907,
+			text: 'Downlink: Digital Telemetry 145.835, CW Beacon 145.855, Linear Transponder 145.860 ‐ 145.880'
+		},
+		{
+			id: 40908,
+			text: 'Downlink: 437.200 - Note: Only on for 24 hours starting at about 2200 UT each Monday, Wednesday and Friday.'
+		},
+		{
+			id: 40909,
+			text: 'Downlink: Digital Telemetry 145.890, CW Beacon 145.910, Linear Transponder 145.915 ‐ 145.935'
+		},
+		{
+			id: 40910,
+			text: 'Downlink: Digital Telemetry 145.955, CW Beacon 145.975, Linear Transponder 145.980 ‐ 146.000'
 		},
 	]
 };
@@ -319,24 +359,25 @@ function findCurrentPositionOfFavorites() {
 
 	coreStore.favoriteIDs.forEach( function( favoriteID ) {
 		var favoriteTLE = _.findWhere( coreStore.tles, { id: favoriteID } );
-		var position = findPositionOfSatellite( favoriteID, now );
+		if ( 'undefined' != typeof favoriteTLE ) {
+			var position = findPositionOfSatellite( favoriteID, now );
 
-		if ( position.elevation >= 0 ) {
-			favoritesToPlot.push( {
-				prn: favoriteTLE.satName,
+			if ( position.elevation >= 0 ) {
+				favoritesToPlot.push( {
+					prn: favoriteTLE.satName,
+					azimuth: position.azimuth,
+					elevation: position.elevation,
+					snr: 100
+				} );
+			}
+
+			favoritesPositions.push( {
+				id: favoriteTLE.id,
+				name: favoriteTLE.satName,
 				azimuth: position.azimuth,
-				elevation: position.elevation,
-				snr: 100
+				elevation: position.elevation
 			} );
 		}
-
-		favoritesPositions.push( {
-			id: favoriteTLE.id,
-			name: favoriteTLE.satName,
-			azimuth: position.azimuth,
-			elevation: position.elevation
-		} );
-
 	} );
 
 	renderInViewList();

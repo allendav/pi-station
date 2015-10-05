@@ -31,6 +31,9 @@ var DgxUpcomingPasses = React.createClass( {
 					satelliteIDs.map( function( satelliteID ) {
 						tle = _.findWhere( this.props.satellites, { id: satelliteID } );
 						note = _.findWhere( this.props.notes, { id: satelliteID} );
+						if ( 'undefined' === typeof note ) {
+							note = { text: '' };
+						}
 
 						passes = this.props.passes.filter( function( p ) {
 							if ( p.startTime < nowTime ) {
