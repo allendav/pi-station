@@ -17,7 +17,8 @@ var coreStore = {
 	location: {
 		longitude: 0,
 		latitude: 0,
-		altitude: 0
+		altitude: 0,
+		bearing: 180
 	},
 	favoriteIDs: [
 		7530,  // AMSAT OSCAR 7
@@ -130,9 +131,17 @@ var coreStore = {
 	]
 };
 
-function convertAzElToXY( azdeg, eldeg ) {
-	var radius = fullRadius * ( 90.0 - eldeg ) / 90.0;
-	azdeg = azdeg - 90; // (so N (0) is up)
+function convertAzElToXY( azdeg, eldeg, scale ) {
+	if ( 'undefined' === typeof scale ) {
+		scale = 1.0;
+	}
+
+	if ( 'undefined' === typeof coreStore.location.bearing ) {
+		coreStore.location.bearing = 0;
+	}
+
+	var radius = scale * fullRadius * ( 90.0 - eldeg ) / 90.0;
+	azdeg = azdeg - 90 - coreStore.location.bearing; // so the current location's bearing is at the top
 	var x = cx + radius * Math.cos( Math.PI * azdeg / 180.0 );
 	var y = cy + radius * Math.sin( Math.PI * azdeg / 180.0 );
 	return { "x" : x, "y" : y };
@@ -176,6 +185,26 @@ function drawPolarGraph() {
 			color = "#666";
 		}
 		circle.attr( "stroke", color );
+	}
+
+	// Draw N, S, E, W
+	var directions = {
+		'N'  : 0,
+		'NE' : 45,
+		'E'  : 90,
+		'SE' : 135,
+		'S'  : 180,
+		'SW' : 225,
+		'W'  : 270,
+		'NW' : 315
+	};
+
+	for ( var direction in directions ) {
+		var directionLabelXY = convertAzElToXY( directions[direction], 0, 1.06 );
+		var directionLabel = paper.text( directionLabelXY.x, directionLabelXY.y, direction );
+		directionLabel.attr( "font-size", "12" );
+		directionLabel.attr( "stroke", "#999" );
+		directionLabel.attr( "fill", "#999" );
 	}
 }
 
