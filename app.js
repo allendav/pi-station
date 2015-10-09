@@ -14,11 +14,14 @@ console.log( '*** Bootstrapping TLE service ***' );
 
 var tleStoreNOAA = new TLEStore( 'noaa.txt' );
 var tleStoreAmateur = new TLEStore( 'amateur.txt' );
+var tleStoreUser = new TLEStore( 'user.txt', false );
 
 function getAggregateTLE() {
 	var amateurTLE = tleStoreAmateur.getTLE();
 	var noaaTLE = tleStoreNOAA.getTLE();
+	var userTLE = tleStoreUser.getTLE();
 	var combinedTLE = amateurTLE.concat( noaaTLE );
+	combinedTLE = combinedTLE.concat( userTLE );
 
 	var amateurLastModified = tleStoreAmateur.getLastModified();
 	var noaaLastModified = tleStoreNOAA.getLastModified();

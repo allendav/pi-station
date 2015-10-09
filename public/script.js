@@ -39,7 +39,8 @@ var coreStore = {
 		40907, // XW-2D
 		40908, // LILACSAT
 		40909, // XW-2E
-		40910  // XW-2F
+		40910, // XW-2F
+		40967  // FOX-1A
 	],
 	notes: [
 		{
@@ -122,6 +123,10 @@ var coreStore = {
 			id: 40910,
 			text: 'Downlink: Digital Telemetry 145.955, CW Beacon 145.975, Linear Transponder 145.980 ‐ 146.000'
 		},
+		{
+			id: 40967,
+			text: 'Downlink: 145.980 MHz'
+		}
 	]
 };
 
