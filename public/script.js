@@ -30,7 +30,6 @@ var coreStore = {
 		28654, // NOAA-18
 		32789, // Delfi-C3
 		33591, // NOAA-19
-		36122, // HOPE-1 aka HO-68
 		39444, // Funcube 1 aka AO-73
 		39770, // Sprout
 		40897, // SERPENS
@@ -126,7 +125,7 @@ var coreStore = {
 		},
 		{
 			id: 40967,
-			text: 'Downlink: 145.980 MHz'
+			text: 'Uplink: 435.180 MHz w/ 67 Hz tone; Downlink: 145.980 MHz'
 		}
 	]
 };

@@ -10,6 +10,7 @@ var DgxUpcomingPasses = React.createClass( {
 		var nowTime = now.getTime();
 		var tle;
 		var key;
+		var pass;
 		var passes;
 
 		// Find all satellites with passes beginning in the future
