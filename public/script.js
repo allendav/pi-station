@@ -197,8 +197,23 @@ function renderInViewList() {
 	drawPolarGraph();
 
 	coreStore.passes.forEach( function( pass ) {
-		if ( nowTime >= pass.startTime && nowTime <= pass.endTime ) {
+		var okToShowSatellite = false;
+		var okToPlot = false;
+		var trackColor = "#ffff00";
 
+		if ( nowTime >= pass.startTime && nowTime <= pass.endTime ) {
+			okToPlot = true;
+			okToShowSatellite = true;
+		}
+
+		var passHoveredSelector = '.s' + pass.id + '_' + pass.startTime + ':hover';
+
+		if ( $( passHoveredSelector ).length > 0 ) {
+			okToPlot = true;
+			trackColor = "#00ffff";
+		}
+
+		if ( okToPlot ) {
 			var position = findPositionOfSatellite( pass.id, now );
 			var tle = _.findWhere( coreStore.tles, { id: pass.id } );
 
@@ -217,18 +232,19 @@ function renderInViewList() {
 			} );
 
 			var track = paper.path( trackString );
-			track.attr( "stroke", "#ffff00" );
+			track.attr( "stroke", trackColor );
 
-			var satCenter = convertAzElToXY( position.azimuth, position.elevation );
-			var satSprite = paper.circle( satCenter.x, satCenter.y, 10 );
-			satSprite.attr( "stroke", "#ffff00" );
-			satSprite.attr( "fill", "#ffff00" );
+			if ( okToShowSatellite ) {
+				var satCenter = convertAzElToXY( position.azimuth, position.elevation );
+				var satSprite = paper.circle( satCenter.x, satCenter.y, 10 );
+				satSprite.attr( "stroke", "#ffff00" );
+				satSprite.attr( "fill", "#ffff00" );
 
-			var satLabel = paper.text( satCenter.x, satCenter.y - 20, tle.satName );
-			satLabel.attr( "font-size", "14" );
-			satLabel.attr( "stroke", "#ccc" );
-			satLabel.attr( "fill", "#ccc" );
-
+				var satLabel = paper.text( satCenter.x, satCenter.y - 20, tle.satName );
+				satLabel.attr( "font-size", "14" );
+				satLabel.attr( "stroke", "#ccc" );
+				satLabel.attr( "fill", "#ccc" );
+			}
 		}
 	} );
 }

@@ -110,11 +110,11 @@ table.time-and-location td {
 }
 
 .currently-in-view table.passes td {
-	color: #aaaa00 !important;
+	color: #aaaa00;
 }
 
 .upcoming-passes table.passes tr.good td {
-	color: #00aa00 !important;
+	color: #00aa00;
 }
 
 .upcoming-passes .satellite-subtitle {
@@ -123,4 +123,16 @@ table.time-and-location td {
 
 .currently-in-view .satellite-subtitle {
 	color: #dddd00;
+}
+
+.pass-row {
+	cursor: pointer;
+}
+
+.section tr.pass-row:hover {
+	background-color: rgba( 255, 255, 255, 0.1 );
+}
+
+.section tr.pass-row:hover td {
+	color: #00ffff !important;
 }

@@ -44,16 +44,21 @@ var DgxPasses = React.createClass( {
 							var maxElTimeString = this.getHM( pass.maxElTime );
 							var endTimeString = this.getHM( pass.endTime );
 
+							var uniqueKey = 's' + pass.id + '_' + pass.startTime;
+
 							var classes = classNames( {
+								'pass-row' : true,
 								'odd': odd,
 								'even': ! odd,
 								'good': ( pass.maxEl >= 30 )
 							} );
 
+							classes += ' ' + uniqueKey;
+
 							odd = ! odd;
 
 							return(
-								<tr className={ classes } key={ pass.startTime }>
+								<tr className={ classes } key={ uniqueKey }>
 									<td>{ startTimeString }</td>
 									<td>{ pass.startAz }&deg;</td>
 									<td>{ maxElTimeString }</td>
