@@ -23,13 +23,10 @@ var coreStore = {
 	favoriteIDs: [
 		7530,  // AMSAT OSCAR 7
 		24278, // FO-29 / JAS 2
-		25338, // NOAA-15
 		25544, // ISS
 		27607, // SAUDISAT 50
 		27844, // CUTE 1
-		28654, // NOAA-18
 		32789, // Delfi-C3
-		33591, // NOAA-19
 		39444, // Funcube 1 aka AO-73
 		39770, // Sprout
 		40897, // SERPENS
@@ -37,10 +34,9 @@ var coreStore = {
 		40911, // XW-2B
 		40906, // XW-2C
 		40907, // XW-2D
-		40908, // LILACSAT
 		40909, // XW-2E
 		40910, // XW-2F
-		40967  // FOX-1A
+		40967  // AO-85 (FOX-1A)
 	],
 	notes: [
 		{
@@ -50,10 +46,6 @@ var coreStore = {
 		{
 			id: 24278,
 			text: 'Downlink 435.8000 – 435.9000 MHz SSB/CW'
-		},
-		{
-			id: 25338,
-			text: 'APT Downlink 137.620 MHz'
 		},
 		{
 			id: 25544,
@@ -68,16 +60,8 @@ var coreStore = {
 			text: 'Downlinks on CW Beacon 436.8375, packet 437.470'
 		},
 		{
-			id: 28654,
-			text: 'APT Downlink 137.9125 MHz'
-		},
-		{
 			id: 32789,
 			text: 'Downlink: 145.870 MHz, 1200 Baud, BPSK, AX.25, 100mW operational in Sun'
-		},
-		{
-			id: 33591,
-			text: 'APT Downlink 137.100 MHz'
 		},
 		{
 			id: 36122,
@@ -110,10 +94,6 @@ var coreStore = {
 		{
 			id: 40907,
 			text: 'Downlink: Digital Telemetry 145.835, CW Beacon 145.855, Linear Transponder 145.860 ‐ 145.880'
-		},
-		{
-			id: 40908,
-			text: 'Downlink: 437.200 - Note: Only on for 24 hours starting at about 2200 UT each Monday, Wednesday and Friday.'
 		},
 		{
 			id: 40909,
@@ -222,17 +202,22 @@ function renderInViewList() {
 			var position = findPositionOfSatellite( pass.id, now );
 			var tle = _.findWhere( coreStore.tles, { id: pass.id } );
 
-			// Plot passes
+			var trackString = '';
+			pass.positions.forEach( function( position, index ) {
+				if ( 0 == index ) {
+					trackString += "M";
+				} else if ( 1 == index ) {
+					trackString += "R";
+				} else {
+					trackString += " ";
+				}
 
-			// So, this doesn't work - for passes already in progress, startAz doesn't have an El of 0.0
-			// also probably need some more points for the spline
+				var xy = convertAzElToXY( position.azimuth, position.elevation );
+				trackString += xy.x + "," + xy.y;
+			} );
 
-			// var p1 = convertAzElToXY( pass.startAz, 0 );
-			// var p2 = convertAzElToXY( pass.maxElAz, pass.maxEl );
-			// var p3 = convertAzElToXY( pass.endAz, 0 );
-
-			// var track = paper.path( "M" + p1.x + "," + p1.y + " R" + p2.x + "," + p2.y + " " + p3.x + "," + p3.y );
-			// track.attr( "stroke", "#0a0" );
+			var track = paper.path( trackString );
+			track.attr( "stroke", "#ffff00" );
 
 			var satCenter = convertAzElToXY( position.azimuth, position.elevation );
 			var satSprite = paper.circle( satCenter.x, satCenter.y, 10 );
@@ -258,7 +243,7 @@ function findPassesOfFavorites() {
 	coreStore.passes = [];
 
 	var now = new Date();
-	var nowTime = now.getTime();
+	var nowTime = now.getTime() - 30 * 60 * 1000; // start a half hour ago
 	var then = new Date();
 	var thenTime = then.getTime();
 
@@ -268,24 +253,36 @@ function findPassesOfFavorites() {
 		var inPass = false;
 		var position;
 
-		var startTime, startAz, maxEl, maxElTime, maxElAz, endTime, endAz;
+		var startTime, startAz, maxElTime, maxElAz, endTime, endAz;
 
+		var maxEl = -1.0;
+		var passPositions = [];
+
+		// Only do any of this if we have TLEs
 		if ( favoriteTLE ) {
 
-			maxEl = -1.0;
-
+			// Find all passes for this satellite for the next 1440 minutes (24 hours)
 			for ( var minutes = 0; minutes < 1440; minutes++ ) {
 
 				thenTime = nowTime + minutes * 60000;
 				then.setTime( thenTime );
 
 				position = findPositionOfSatellite( favoriteID, then );
+
 				if ( null !== position.elevation ) {
-					if ( ! inPass && position.elevation >= 0.0 ) {
+					if ( position.elevation >= 0.0 ) {
+						passPositions.push( {
+							time: thenTime,
+							azimuth: position.azimuth,
+							elevation: position.elevation
+						} );
+					}
+
+					if ( ! inPass && position.elevation >= 0.0 ) { // the pass has begun
 						inPass = true;
 						startTime = thenTime;
 						startAz = position.azimuth;
-					} else if ( inPass && position.elevation < 0.0 ) {
+					} else if ( inPass && position.elevation < 0.0 ) { // the pass has ended
 						inPass = false;
 
 						// save the record if Elevation got to at least 15 degrees
@@ -298,37 +295,76 @@ function findPassesOfFavorites() {
 								maxElAz: maxElAz,
 								maxElTime: maxElTime,
 								endTime: thenTime,
-								endAz: position.azimuth
+								endAz: position.azimuth,
+								positions: passPositions
 							} );
 						}
 
-						// Reset maxEl for next pass
+						// Reset for next pass
 						maxEl = -1.0;
+						passPositions = [];
 					}
+
+
 
 					if ( inPass && position.elevation > maxEl ) {
 						maxEl = position.elevation;
 						maxElAz = position.azimuth;
 						maxElTime = thenTime;
 					}
-
 				}
-
 			}
 		}
-
 	} );
 
-	coreStore.passes = coreStore.passes.sort( function( a, b ) {
+	// Now, refine the found passes to second (not minute) resolution
+	coreStore.passes.forEach( function ( pass, index ) {
+		inPass = false;
+		thenTime = pass.startTime - 60 * 1000;
+		maxEl = -1.0;
 
+		do {
+			then.setTime( thenTime );
+			position = findPositionOfSatellite( pass.id, then );
+
+			if ( ! inPass && position.elevation >= 0.0 ) {
+				inPass = true;
+				startTime = thenTime;
+				startAz = position.azimuth;
+			} else if ( inPass && position.elevation < 0.0 ) {
+				inPass = false;
+				endTime = thenTime;
+				endAz = position.azimuth;
+			}
+
+			if ( inPass && position.elevation > maxEl ) {
+				maxEl = position.elevation;
+				maxElAz = position.azimuth;
+				maxElTime = thenTime;
+			}
+
+			thenTime += 1000; // increment by one second
+		} while ( thenTime < pass.endTime + 60 * 1000 );
+
+		// update the record with the precision times
+		pass.startTime = startTime;
+		pass.startAz = startAz;
+		pass.maxEl = maxEl;
+		pass.maxElAz = maxElAz;
+		pass.maxElTime = maxElTime;
+		pass.endTime = endTime;
+		pass.endAz = endAz;
+		coreStore.passes[ index ] = pass;
+	} );
+
+	// Lastly, sort the passes in chronological order
+	coreStore.passes = coreStore.passes.sort( function( a, b ) {
 		if ( a.startTime < b.startTime ) {
 			return -1;
 		}
-
 		if ( a.startTime > b.startTime ) {
 			return 1;
 		}
-
 		return 0;
 	} );
 
