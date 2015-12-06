@@ -38,7 +38,7 @@ var DgxSatellite = React.createClass( {
 
 		return (
 			<span className="satellite-subtitle in-view">
-				Az: { position.azimuth }&deg;, El: { position.elevation }&deg;, ends { endTimeFromNow }
+				Az: { position.azimuth }&deg;, El: { position.elevation }&deg;, Range: { position.rangeSat} km, ends { endTimeFromNow }
 			</span>
 		);
 	},

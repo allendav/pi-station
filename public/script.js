@@ -430,10 +430,10 @@ function findPositionOfSatellite( satelliteID, dateTime ) {
 
 		azimuth   = Math.floor( 10.0 * lookAngles.azimuth * rad2deg ) / 10.0;
 		elevation = Math.floor( 10.0 * lookAngles.elevation * rad2deg ) / 10.0;
-
+		rangeSat  = Math.floor( lookAngles.rangeSat );
 	}
 
-	return { azimuth: azimuth, elevation: elevation };
+	return { azimuth: azimuth, elevation: elevation, rangeSat: rangeSat };
 }
 
 function findCurrentPositionOfFavorites() {
