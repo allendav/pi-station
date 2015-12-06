@@ -22,19 +22,19 @@ var coreStore = {
 	},
 	favoriteIDs: [
 		7530,  // AMSAT OSCAR 7
-		24278, // FO-29 / JAS 2
+		// 24278, // FO-29 / JAS 2 SSB
 		25544, // ISS
 		27607, // SAUDISAT 50
 		27844, // CUTE 1
 		32789, // Delfi-C3
 		39444, // Funcube 1 aka AO-73
-		39770, // Sprout
-		40897, // SERPENS
-		40903, // XW-2A
-		40911, // XW-2B
-		40906, // XW-2C
-		40907, // XW-2D
-		40909, // XW-2E
+		// 39770, // Sprout
+		// 40897, // SERPENS
+		// 40903, // XW-2A
+		// 40911, // XW-2B
+		// 40906, // XW-2C
+		// 40907, // XW-2D
+		// 40909, // XW-2E
 		40910, // XW-2F
 		40967  // AO-85 (FOX-1A)
 	],
