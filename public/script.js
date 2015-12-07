@@ -21,12 +21,12 @@ var coreStore = {
 		bearing: 180
 	},
 	favoriteIDs: [
-		7530,  // AMSAT OSCAR 7
+		// 7530,  // AMSAT OSCAR 7
 		// 24278, // FO-29 / JAS 2 SSB
 		25544, // ISS
 		27607, // SAUDISAT 50
-		27844, // CUTE 1
-		32789, // Delfi-C3
+		// 27844, // CUTE 1
+		// 32789, // Delfi-C3
 		39444, // Funcube 1 aka AO-73
 		// 39770, // Sprout
 		// 40897, // SERPENS
