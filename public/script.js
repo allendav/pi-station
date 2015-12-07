@@ -101,7 +101,7 @@ var coreStore = {
 		},
 		{
 			id: 40910,
-			text: 'Downlink: Digital Telemetry 145.955, CW Beacon 145.975, Linear Transponder 145.980 ‐ 146.000'
+			text: 'Uplink: Linear Transponder 435.330 - 435.350 MHz; Downlink: Digital Telemetry 145.955, CW Beacon 145.975, Linear Transponder 145.980 ‐ 146.000'
 		},
 		{
 			id: 40967,
