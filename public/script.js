@@ -21,6 +21,7 @@ var coreStore = {
 		bearing: 180
 	},
 	favoriteIDs: [
+		1002, // LES-1
 		// 7530,  // AMSAT OSCAR 7
 		// 24278, // FO-29 / JAS 2 SSB
 		25544, // ISS
@@ -39,6 +40,10 @@ var coreStore = {
 		40967  // AO-85 (FOX-1A)
 	],
 	notes: [
+		{
+			id: 1002,
+			text: 'Downlink (tone) at about 237 MHz'
+		},
 		{
 			id: 7530,
 			text: 'TLM Beacon: Downlink 145.9775 MHz CW; Uplink: 432.1250 – 432.1750 MHz SSB/CW; Downlink 145.9750 – 145.9250 MHz SSB/CW',
