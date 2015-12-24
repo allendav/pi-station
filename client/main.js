@@ -1,7 +1,8 @@
-/**
- * Client script for satellite tracking
- *
- */
+var React = require( 'react' );
+var ReactDOM = require( 'react-dom' );
+var DgxTimeAndLocation = require( './views/time-and-location.jsx' );
+var DgxUpcomingPasses = require( './views/upcoming-passes.jsx' );
+var DgxCurrentlyInView = require( './views/currently-in-view.jsx' );
 
 // TODO - move these vars and the graph drawing to a component
 var paper;
@@ -518,7 +519,7 @@ jQuery( document ).ready( function( $ ) {
 	} );
 
 	setInterval( function() {
-		React.render(
+		ReactDOM.render(
 			React.createElement( DgxTimeAndLocation, {
 				location: coreStore.location
 			} ), document.getElementById( 'time-and-location' )
@@ -527,7 +528,7 @@ jQuery( document ).ready( function( $ ) {
 		if ( coreStore.tles.length ) {
 			findCurrentPositionOfFavorites();
 
-			React.render(
+			ReactDOM.render(
 				React.createElement( DgxUpcomingPasses, {
 					passes: coreStore.passes,
 					satellites: coreStore.tles,
@@ -535,7 +536,7 @@ jQuery( document ).ready( function( $ ) {
 				} ), document.getElementById( 'upcoming-passes' )
 			);
 
-			React.render(
+			ReactDOM.render(
 				React.createElement( DgxCurrentlyInView, {
 					passes: coreStore.passes,
 					satellites: coreStore.tles,

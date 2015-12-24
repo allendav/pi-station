@@ -1,4 +1,6 @@
-var DgxTimeAndLocation = React.createClass( {
+var React = require( 'react' );
+
+module.exports = React.createClass( {
 
 	getDMS: function( angle ) {
 		var west = false;

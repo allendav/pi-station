@@ -1,4 +1,7 @@
-var DgxSatellite = React.createClass( {
+var React = require( 'react' );
+var DgxPasses = require( './passes.jsx' );
+
+module.exports = React.createClass( {
 
 	propTypes: {
 		satellite: React.PropTypes.object.isRequired,

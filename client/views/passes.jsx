@@ -1,4 +1,6 @@
-var DgxPasses = React.createClass( {
+var React = require( 'react' );
+
+module.exports = React.createClass( {
 
 	propTypes: {
 		passes: React.PropTypes.array.isRequired
