@@ -1,5 +1,6 @@
 var React = require( 'react' );
 var DgxPasses = require( './passes.jsx' );
+var passesStore = require( '../stores/passes.js' )();
 
 module.exports = React.createClass( {
 
@@ -36,7 +37,7 @@ module.exports = React.createClass( {
 			);
 		}
 
-		var position = findPositionOfSatellite( this.props.pass.id, now );
+		var position = passesStore.findPositionOfSatellite( this.props.pass.id, now );
 		var endTimeFromNow = moment( endTime ).fromNow();
 
 		return (
