@@ -14,25 +14,7 @@ function PassesStore() {
 		altitude: 0,
 		bearing: 180
 	};
-	this.favoriteIDs = [
-		1002, // LES-1
-		// 7530,  // AMSAT OSCAR 7
-		// 24278, // FO-29 / JAS 2 SSB
-		25544, // ISS
-		27607, // SAUDISAT 50
-		// 27844, // CUTE 1
-		// 32789, // Delfi-C3
-		39444, // Funcube 1 aka AO-73
-		// 39770, // Sprout
-		// 40897, // SERPENS
-		// 40903, // XW-2A
-		// 40911, // XW-2B
-		// 40906, // XW-2C
-		// 40907, // XW-2D
-		// 40909, // XW-2E
-		40910, // XW-2F
-		40967  // AO-85 (FOX-1A)
-	];
+	this.favoriteIDs = [];
 	this.notes = [
 		{
 			id: 1002,
@@ -297,7 +279,44 @@ PassesStore.prototype.findPositionOfSatellite = function( satelliteID, dateTime 
 	return { azimuth: azimuth, elevation: elevation, rangeSat: rangeSat };
 };
 
-PassesStore.prototype.connect = function() {
+PassesStore.prototype.loadFavorites = function() {
+	// Default, just the space station and FOX-1A
+	this.favoriteIDs = [ 25544, 40967 ];
+
+	if ( "undefined" !== typeof localStorage ) {
+		var localStorageFavorites = localStorage.getItem( "favorites" );
+		if ( null !== localStorageFavorites ) {
+			localStorageFavorites = localStorageFavorites.split( "," );
+			this.favoriteIDs = [];
+			localStorageFavorites.map( function( favorite ) {
+				this.favoriteIDs.push( parseInt( favorite, 10 ) );
+			}.bind( this ) );
+			console.log( "loaded favorites from localStorage:", this.favoriteIDs );
+		}
+	}
+};
+
+PassesStore.prototype.setFavorites = function( favorites ) {
+	this.favoriteIDs = favorites;
+
+	if ( "undefined" !== typeof localStorage ) {
+		// the browser will store arrays as a comma delimeted string
+		localStorage.setItem( "favorites", favorites );
+	}
+};
+
+PassesStore.prototype.getFavorites = function() {
+	return this.favoriteIDs;
+}
+
+// TODO - add event emitter (e.g. when favorites changes)
+
+PassesStore.prototype.init = function() {
+
+	// Load favorites
+	this.loadFavorites();
+
+	// Connect our socket
 	this.socket = io.connect();
 
 	this.socket.on( 'location', ( function( data ) {

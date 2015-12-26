@@ -4,6 +4,7 @@ var passesStore = require( './stores/passes.js' )();
 var DgxTimeAndLocation = require( './views/time-and-location.jsx' );
 var DgxUpcomingPasses = require( './views/upcoming-passes.jsx' );
 var DgxCurrentlyInView = require( './views/currently-in-view.jsx' );
+var Settings = require( './views/settings.jsx' );
 
 // TODO - move these vars and the graph drawing to a component
 var paper;
@@ -205,13 +206,13 @@ function repositionPolarGraphPaper() {
 }
 
 jQuery( document ).ready( function( $ ) {
+	passesStore.init();
+
 	// Position drawing area and keep it that way
 	repositionPolarGraphPaper();
 	$( window ).resize( function() {
 		repositionPolarGraphPaper();
 	} );
-
-	passesStore.connect();
 
 	setInterval( function() {
 		ReactDOM.render(
@@ -221,6 +222,10 @@ jQuery( document ).ready( function( $ ) {
 		if ( passesStore.tles.length ) {
 			findCurrentPositionOfFavorites();
 			renderInViewList();
+
+			ReactDOM.render(
+				React.createElement( Settings, {} ), document.getElementById( 'settings' )
+			);
 
 			ReactDOM.render(
 				React.createElement( DgxUpcomingPasses, {} ), document.getElementById( 'upcoming-passes' )
