@@ -33,6 +33,10 @@ function PassesStore() {
 			text: 'Packet Downlink 145.825 MHz'
 		},
 		{
+			id: 26931,
+			text: 'Uplink and Downlink: 145.825 MHz (FM FSK, AX.25, 1k2 and 9k6) (sun only)'
+		},
+		{
 			id: 27607,
 			text: 'Uplink: 145.850 MHz (67.0 Hz PL Tone) SO-50 also has a 10 minute timer that must be armed before use. Transmit a 2 second carrier with a PL tone of 74.4 to arm the timer.; Downlink: 436.800 MHz'
 		},
