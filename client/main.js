@@ -215,9 +215,7 @@ jQuery( document ).ready( function( $ ) {
 
 	setInterval( function() {
 		ReactDOM.render(
-			React.createElement( DgxTimeAndLocation, {
-				location: passesStore.location
-			} ), document.getElementById( 'time-and-location' )
+			React.createElement( DgxTimeAndLocation, {} ), document.getElementById( 'time-and-location' )
 		);
 
 		if ( passesStore.tles.length ) {
@@ -225,19 +223,11 @@ jQuery( document ).ready( function( $ ) {
 			renderInViewList();
 
 			ReactDOM.render(
-				React.createElement( DgxUpcomingPasses, {
-					passes: passesStore.passes,
-					satellites: passesStore.tles,
-					notes: passesStore.notes
-				} ), document.getElementById( 'upcoming-passes' )
+				React.createElement( DgxUpcomingPasses, {} ), document.getElementById( 'upcoming-passes' )
 			);
 
 			ReactDOM.render(
-				React.createElement( DgxCurrentlyInView, {
-					passes: passesStore.passes,
-					satellites: passesStore.tles,
-					notes: passesStore.notes
-				} ), document.getElementById( 'currently-in-view' )
+				React.createElement( DgxCurrentlyInView, {} ), document.getElementById( 'currently-in-view' )
 			);
 
 

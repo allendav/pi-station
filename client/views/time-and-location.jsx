@@ -1,4 +1,5 @@
 var React = require( 'react' );
+var passesStore = require( '../stores/passes.js' )();
 
 module.exports = React.createClass( {
 
@@ -29,8 +30,8 @@ module.exports = React.createClass( {
 		var nowMoment = moment( nowTime );
 		var utcMoment = moment( nowTime ).utc();
 
-		var latDMS = this.getDMS( this.props.location.latitude );
-		var longDMS = this.getDMS( this.props.location.longitude );
+		var latDMS = this.getDMS( passesStore.location.latitude );
+		var longDMS = this.getDMS( passesStore.location.longitude );
 
 		return (
 			<div className="section">
@@ -46,12 +47,12 @@ module.exports = React.createClass( {
 							</tr>
 							<tr>
 								<td>
-									{ this.props.location.latitude }&deg;
+									{ passesStore.location.latitude }&deg;
 								</td>
 								<td>
-									{ this.props.location.longitude }&deg;
+									{ passesStore.location.longitude }&deg;
 								</td>
-								<td>{ this.props.location.altitude } m</td>
+								<td>{ passesStore.location.altitude } m</td>
 								<td>
 									{ nowMoment.format( 'ddd, MMM Do YYYY' ) }
 								</td>

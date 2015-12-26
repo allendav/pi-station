@@ -1,12 +1,8 @@
 var React = require( 'react' );
 var DgxSatellite = require( './satellite.jsx' );
+var passesStore = require( '../stores/passes.js' )();
 
 module.exports = React.createClass( {
-
-	propTypes: {
-		passes: React.PropTypes.array.isRequired,
-		satellites: React.PropTypes.array.isRequired
-	},
 
 	render: function() {
 		var passesToShow = [];
@@ -20,7 +16,7 @@ module.exports = React.createClass( {
 
 		// If there are none, return null
 
-		this.props.passes.forEach( function( pass ) {
+		passesStore.passes.forEach( function( pass ) {
 			if ( nowTime >= pass.startTime && nowTime <= pass.endTime ) {
 				passesToShow.push( pass );
 			}
@@ -37,13 +33,13 @@ module.exports = React.createClass( {
 				</h2>
 				{
 					passesToShow.map( function( pass ) {
-						tle = _.findWhere( this.props.satellites, { id: pass.id } );
-						note = _.findWhere( this.props.notes, { id: pass.id } );
+						tle = _.findWhere( passesStore.tles, { id: pass.id } );
+						note = _.findWhere( passesStore.notes, { id: pass.id } );
 						if ( 'undefined' === typeof note ) {
 							note = { text: '' };
 						}
 						key = '' + pass.id + '-' + pass.startTime;
-						passes = this.props.passes.filter( function( p ) {
+						passes = passesStore.passes.filter( function( p ) {
 							return ( pass.id === p.id);
 						} );
 						passes = [ passes[0] ];

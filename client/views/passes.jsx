@@ -1,4 +1,5 @@
 var React = require( 'react' );
+var passesStore = require( '../stores/passes.js' )();
 
 module.exports = React.createClass( {
 
