@@ -45,6 +45,14 @@ function PassesStore() {
 			text: 'Downlinks on CW Beacon 436.8375, packet 437.470'
 		},
 		{
+			id: 28895,
+			text: 'Downlink: 437.345 MHz FM FSK AX.25 1k2, 437.465 MHz CW'
+		},
+		{
+			id: 32785,
+			text: 'Downlink: 437.475 MHz, FM FSK 9k6 / AFSK 1k2 (AX.25)'
+		},
+		{
 			id: 32789,
 			text: 'Downlink: 145.870 MHz, 1200 Baud, BPSK, AX.25, 100mW operational in Sun'
 		},
@@ -53,12 +61,20 @@ function PassesStore() {
 			text: 'Downlink 435.7900 MHz CW Beacon; 435.6750 MHz FM Voice repeater; 435.7650 – 435.7150 MHz SSB/CW Linear transponder (inverted); 435.6750 MHz 1k2 AFSK FM'
 		},
 		{
+			id: 39430,
+			text: 'Downlink 437.250 MHz, 1k2/2k4/4k8/9k6 GMSK'
+		},
+		{
 			id: 39444,
 			text: '145.935 MHz BPSK Telemetry; Transponder (eclipse only): 435.150 – 435.130 MHz Uplink; – 145.950 – 145.970 MHz Downlink'
 		},
 		{
 			id: 39770,
 			text: '437.525 MHz FM 1k2 AFSK AX.25, CW, SSTV Downlink'
+		},
+		{
+			id: 40021,
+			text: 'Uplink: 435.220 MHz; Downlink: 145.980 MHz APRS/Beacon'
 		},
 		{
 			id: 40897,
@@ -90,7 +106,7 @@ function PassesStore() {
 		},
 		{
 			id: 40967,
-			text: 'Uplink: 435.180 MHz w/ 67 Hz tone; Downlink: 145.980 MHz'
+			text: 'Uplink: 435.170 MHz w/ 67 Hz tone; Downlink: 145.980 MHz'
 		}
 	];
 }
