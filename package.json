@@ -13,6 +13,7 @@
     "config": "1.16.0",
     "express": "4.13.1",
     "node-gpsd": "0.2.2",
+    "node-prowl": "0.1.7",
     "react": "^0.14.3",
     "react-bootstrap": "0.28.1",
     "react-dom": "^0.14.3",

@@ -2,6 +2,7 @@ var express = require( 'express' );
 var app = express();
 var config = require( 'config' );
 var GPSParser = require( './lib/gps-parser' );
+var Prowl = require( 'node-prowl' );
 var TLEStore = require( './lib/tle-store' );
 var SocketIO = require( 'socket.io' );
 
@@ -49,6 +50,17 @@ tleStoreAmateur.on( 'change', function( store ) {
 // Bootstrap GPS service
 // console.log( '*** Bootstrapping GPS service ***' );
 // TODO : use gpsd
+
+var prowl = false;
+if ( config.has( 'prowl-key' ) ) {
+	prowl = new Prowl( config.get( 'prowl-key' ) );
+	prowl.push( 'pi-station has started', 'pi-station', function( err, remaining ) {
+		if ( err ) {
+			console.log( err );
+		}
+		console.log( 'I have ' + remaining + ' calls to the API remaining during the current hour ');
+	} );
+}
 
 // Start serving sockets
 console.log( '*** Listening for clients ***' );

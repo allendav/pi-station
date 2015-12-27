@@ -1,6 +1,9 @@
 # Browserify products
 public/bundle.js
 
+# Config
+config/production.json
+
 # Logs
 logs
 *.log
