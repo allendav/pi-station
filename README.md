@@ -10,11 +10,13 @@ A node.js powered "Earth Station in a Box", designed for Raspberry Pi
     cd repos
     git clone git@github.com:allendav/pi-station.git
     cd pi-station
+    mkdir cache
 
 # Install/update dependencies
     npm install -d
 
 # Build the client javascript
+    npm install -g browserify
     browserify -t [ babelify --presets [ react ] ] client/main.js -o public/bundle.js
 
 # Prowl support
